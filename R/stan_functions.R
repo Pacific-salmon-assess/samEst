@@ -12,7 +12,7 @@
 #' @export
 #' @examples
 #' m2=sr_mod(type='static',ac = TRUE,par='n',lfo=T)
-sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both'),lfo=FALSE, modelcode=FALSE,smax_di){
+sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both'),lfo=FALSE, modelcode=FALSE){
   rstan::rstan_options(auto_write = TRUE)
   options(mc.cores = parallel::detectCores())
   
@@ -327,13 +327,13 @@ if(type=='rw'&par=='a'){
   vector[N] S; //spawners in time T
   real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
-  real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
+  int smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
 real logsmax_pr;
 real logsmax_pr_sig;
 
-logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr_sig=sqrt(log(1+(pSmax_sig^2/pSmax_mean^2))); //this converts sigma on the untransformed scale to a log scale
 logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters{
@@ -354,13 +354,13 @@ transformed parameters{
   real b = 1.0/Smax;
   vector[L] log_a; //a in each year (on log scale)
   
+  sigma=(1-F_rw)*sigma_tot;
+  sigma_a=F_rw*sigma_tot;
+  
   log_a[1] = log_a0; //initial value
   for(t in 2:L){
     log_a[t] = log_a[t-1] + a_dev[t-1]*sigma_a; //random walk of log_a
   }
-  
-  sigma=(1-F_rw)*sigma_tot;
-  sigma_a=F_rw*sigma_tot;
   
 }  
 model{
@@ -376,13 +376,12 @@ model{
   if(smax_dist==3){
   Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
   }
-
-
+  
    a_dev ~ std_normal(); //standardized (z-scales) deviances
   
   //variance terms
   sigma_tot ~ gamma(2,1); //half normal on variance (lower limit of zero)
-  F_rw ~ beta(2,5); //fraction attributed to random walk in productivity  
+  F_rw ~ beta(1,2); //fraction attributed to random walk in productivity  
  
   for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - b*S[n], sigma); 
   
@@ -447,12 +446,14 @@ transformed parameters{
   real b = 1.0/Smax;
   vector[L] log_a; //a in each year (on log scale)
   
-  b=exp(log_b);
+  sigma=(1-F_rw)*sigma_tot;
+  sigma_a=F_rw*sigma_tot;
   
   log_a[1] = log_a0; //initial value
   for(t in 2:L){
     log_a[t] = log_a[t-1] + a_dev[t-1]*sigma_a; //random walk of log_a
   }
+  
 }  
 model{
   //priors
@@ -468,13 +469,14 @@ model{
   Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
   }
   
-    a_dev ~ std_normal(); //standardized (z-scales) deviances
+ a_dev ~ std_normal(); //standardized (z-scales) deviances
   
-  //variance terms
-  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
-  sigma_a ~ normal(0,1); //half normal on variance (lower limit of zero)
-   
-  for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - b*S[n], sigma);
+ //variance terms
+  sigma_tot ~ gamma(2,1); //half normal on variance (lower limit of zero)
+  F_rw ~ beta(1,2); //fraction attributed to random walk in productivity  
+ 
+  for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - b*S[n], sigma); 
+  
 }
   generated quantities{
   real log_lik_oos;
@@ -525,13 +527,15 @@ transformed parameters{
   vector<lower=0>[L] Smax; //b in each year
   vector<lower=0>[L] b; //b in each year
   
+  sigma=(1-F_rw)*sigma_tot;
+  sigma_b=F_rw*sigma_tot;
+  
   logSmax[1] = log(Smax0);
   for(t in 2:L){
     logSmax[t] = logSmax[t-1] + b_dev[t-1]*sigma_b;
   } 
   
-  sigma=(1-F_rw)*sigma_tot;
-  sigma_b=F_rw*sigma_tot;
+ 
   Smax=exp(logSmax);
   b=1.0./Smax;
 }  
@@ -550,7 +554,7 @@ model{
   } 
   //variance terms
   sigma_tot ~ gamma(2,1);
-  F_rw ~ beta(2,5); //fraction attributed to random walk in productivity   
+  F_rw ~ beta(1,2); //fraction attributed to random walk in productivity   
  
   b_dev ~ std_normal();
  for(n in 1:N) R_S[n] ~ normal(log_a-b[ii[n]]*S[n], sigma);
@@ -603,28 +607,37 @@ parameters {
   real<lower = 0> Smax0; //
 
  //variance components  
-  real<lower = 0> sigma;
-  real<lower = 0> sigma_b;
-  
+  real<lower = 0> sigma_tot; //total variance - process + high freq. error
+  real<lower=0,upper=1> F_rw; //fraction of variance as random walk
+ 
   //time-varying parameters
   vector[L-1] b_dev; //year-to-year deviations in a
 
 }
 
 transformed parameters{
+  real<lower = 0> sigma;
+  real<lower = 0> sigma_b;
+  vector[L] logSmax; //b in each year
   vector<lower=0>[L] Smax; //b in each year
   vector<lower=0>[L] b; //b in each year
   
-  Smax[1] = Smax0;
+  sigma=(1-F_rw)*sigma_tot;
+  sigma_b=F_rw*sigma_tot;
+  
+  logSmax[1] = log(Smax0);
   for(t in 2:L){
-    Smax[t] = Smax[t-1] + b_dev[t-1]*sigma_b;
+    logSmax[t] = logSmax[t-1] + b_dev[t-1]*sigma_b;
   } 
+  
+ 
+  Smax=exp(logSmax);
   b=1.0./Smax;
-}  
+}   
 
 model{
   //priors
-  log_a ~ normal(1.5,2.5); //productivity
+ log_a ~ normal(1.5,2.5); //productivity
   if(smax_dist==1){
   Smax0 ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
   }
@@ -635,12 +648,11 @@ model{
   Smax0 ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
   } 
   //variance terms
-  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
-  sigma_b ~ normal(0,smax_pr_sig); //half normal on variance (lower limit of zero)
-  
+  sigma_tot ~ gamma(2,1);
+  F_rw ~ beta(1,2); //fraction attributed to random walk in productivity   
+ 
   b_dev ~ std_normal();
-  
-  for(n in 1:N) R_S[n] ~ normal(log_a-S[n]*b[ii[n]], sigma);
+ for(n in 1:N) R_S[n] ~ normal(log_a-b[ii[n]]*S[n], sigma);
 }
 generated quantities{
  real log_lik_oos;

@@ -72,7 +72,7 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,smax_dists=c('normal',
         datm$smax_dist=2
       }
       if(smax_dists=='cauchy'){
-        datm$smax_dist=1
+        datm$smax_dist=3
       }
     }
 
@@ -166,7 +166,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,smax_dis
   smax_dists=match.arg(smax_dists,choices=c('normal','lognormal','cauchy'))
   
   if(is.null(mod)==T){
-    sm=sr_mod(type='rw',ac=ac,par=par)
+    sm=sr_mod(type='rw',par=par)
   }else{sm=mod}
   
   if(is.null(smax_priors)==TRUE){
@@ -184,7 +184,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,smax_dis
       datm$smax_dist=2
     }
     if(smax_dists=='cauchy'){
-      datm$smax_dist=1
+      datm$smax_dist=3
     }
     
   }else{
@@ -202,7 +202,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,smax_dis
       datm$smax_dist=2
     }
     if(smax_dists=='cauchy'){
-      datm$smax_dist=1
+      datm$smax_dist=3
     }
   }
   
@@ -345,7 +345,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors
       datm$smax_dist=2
     }
     if(smax_dists=='cauchy'){
-      datm$smax_dist=1
+      datm$smax_dist=3
     }
     
   }else{
@@ -365,7 +365,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors
       datm$smax_dist=2
     }
     if(smax_dists=='cauchy'){
-      datm$smax_dist=1
+      datm$smax_dist=3
     }
   }
   
@@ -449,11 +449,11 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors
 #'   allowed.
 #' @param iter.max Maximum number of iterations allowed.
 #' @param ... Anything else. See the 'Control parameters' section of
-#'   [rstan::sampling].
+#'   [rstan::stan].
 #'
 #' @export
-stancontrol <- function(adapt_delta = 0.99,  ...) {
-  list(adapt_delta = 0.99, ...)
+stancontrol <- function(adapt_delta = 0.99,max_treedepth = 20,...) {
+  list(adapt_delta = 0.99,max_treedepth = 20,...)
 }
 
 
