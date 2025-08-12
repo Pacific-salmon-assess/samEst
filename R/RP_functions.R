@@ -53,7 +53,7 @@ Sgencompute <- function(S, loga, b, Smsy ) {
 #' 
 sGenCalc <- function(loga,b, Smsy) {
   #gives the min Ricker log-likelihood
-  if(a>0){
+  if(loga>0){
     fnSGen <- function(S, loga, b, Smsy) -1.0 * Sgencompute(S, loga, b, Smsy)$nSS
     fit <- optimize(f = fnSGen, interval = c(0, ((loga / b) * (0.5 - 0.07 * loga))),
                  loga=loga,b=b, Smsy = Smsy)
