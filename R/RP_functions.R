@@ -51,6 +51,8 @@ Sgencompute <- function(S, loga, b, Smsy ) {
 #' sgen<-sGenCalc(m1$alpha,m1$beta,m1$Smsy)
 #' 
 #' 
+#' 
+#' 
 sGenCalc <- function(loga,b, Smsy) {
   #gives the min Ricker log-likelihood
   if(loga>0){
