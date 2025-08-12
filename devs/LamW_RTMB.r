@@ -179,7 +179,7 @@ dLambertW0_internal <- function(x, y, dy) {
 #' @details code adapted from [adjoint example](https://github.com/kaskr/RTMB/blob/d4f7db7f6c3073d7f85930ed6d6d4dd264b05612/RTMB/R/adjoint.R) 
 #
 #' 
-#' @returns penalized (if priors_flag= TRUE) negative log likelihood
+#' @returns solution to lambert function
 #' 
 LambertW0 <- RTMB:::ADjoint(LambertW0_internal, dLambertW0_internal)
 
