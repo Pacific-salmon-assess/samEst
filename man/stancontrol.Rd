@@ -4,11 +4,11 @@
 \alias{stancontrol}
 \title{Sampling control options.}
 \usage{
-stancontrol(adapt_delta = 0.99, ...)
+stancontrol(adapt_delta = 0.99, max_treedepth = 20, ...)
 }
 \arguments{
 \item{...}{Anything else. See the 'Control parameters' section of
-\link[rstan:stanmodel-method-sampling]{rstan::sampling}.}
+\link[rstan:stan]{rstan::stan}.}
 
 \item{eval.max}{Maximum number of evaluations of the objective function
 allowed.}

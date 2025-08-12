@@ -8,8 +8,9 @@ ricker_stan(
   data,
   ac = FALSE,
   smax_priors = NULL,
+  smax_dists = c("normal", "lognormal", "cauchy"),
   mod = NULL,
-  full_posterior = FALSE,
+  full_posterior = TRUE,
   control = stancontrol(adapt_delta = 0.99),
   warmup = 300,
   chains = 6,
@@ -18,7 +19,7 @@ ricker_stan(
 )
 }
 \arguments{
-\item{data}{A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series.}
+\item{data}{A list or data frame containing complete vectors for: brood year (by), Spawners (s) and log(Recruits/Spawners) (logRS) time series.}
 
 \item{smax_priors}{Options for custom Smax (capacity) priors - 2 values for the mean and the scale (variance). Defaults to mean = half maximum observed spawners, scale = max. observed spawners (from data)}
 

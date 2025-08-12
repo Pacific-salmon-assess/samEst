@@ -9,6 +9,7 @@ ricker_hmm_stan(
   par = c("a", "b", "both"),
   k_regime = 2,
   smax_priors = NULL,
+  smax_dists = c("normal", "lognormal", "cauchy"),
   dirichlet_stasis_prior = 2,
   full_posterior = FALSE,
   control = stancontrol(),
