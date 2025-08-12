@@ -26,7 +26,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
     }
     plot=ggplot2::ggplot(df, aes(S, R)) +
       geom_line(data=pred_df,aes(x=x_new,y=pred),linewidth=1.3)+
-      geom_point(aes(colour = by),size=2.5) +
+      geom_point(aes(colour = by),size=3.5) +
       scale_colour_viridis_c(name='Year')+
       ggtitle(title)+
       xlab("Spawners") + 
@@ -673,9 +673,9 @@ post_check<- function(fit,data,pdf=FALSE,path=NULL,filename=NULL){
   par(new=T)
   plot(rep(0,length(emp_RS$x))~emp_RS$x,type='n',col='darkred',ylab='',xlab='log(R/S)',xlim=c(min(yrep_RS),max(yrep_RS)),ylim=c(0,1),yaxt='n',bty='l')
    for(i in 1:6){
-    d=density(yrep_RS[,i,],bw=0.02)
+    d=density(yrep_RS[,i,],bw=0.05)
     lines(d$y/max(d$y)~d$x,col=cols[i+1])
-    text(paste('pred. chain',i,sep=' '),x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*(0.1+0.05*i)),col=cols[i+1])
+    text(paste('pred. chain',i,sep=' '),x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*(0.1+0.08*i)),col=cols[i+1])
   }
   hist(log10(data$R),main='',xaxt='n',breaks=30,freq=T,xlab='',ylab='counts of observations in time-series',col=adjustcolor('darkred',alpha.f=0.6),border='white',xlim=c(min(yrep_R),max(yrep_R)),xaxt='n')
   text('empirical obs.',x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*0.1),col=adjustcolor('darkred',alpha.f=0.6))
@@ -684,7 +684,7 @@ post_check<- function(fit,data,pdf=FALSE,path=NULL,filename=NULL){
   for(i in 1:6){
     d=density(yrep_R[,i,],bw=0.02)
     lines(d$y/max(d$y)~d$x,col=cols[i+1])
-    text(paste('pred. chain',i,sep=' '),x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*(0.1+0.05*i)),col=cols[i+1])
+    text(paste('pred. chain',i,sep=' '),x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*(0.1+0.08*i)),col=cols[i+1])
   }
   pow <- c(min(round(log10(data$R)))-1):c(max(round(log10(data$R))))
   axis(1, col="black", at=seq(min(round(log10(data$R)))-1,max(round(log10(data$R))),by=1),tcl=-0.45, cex.axis=1.2,labels=10^pow)
@@ -692,22 +692,22 @@ post_check<- function(fit,data,pdf=FALSE,path=NULL,filename=NULL){
   axis(1, log10(ticksat), col="black", labels=NA,
        tcl=-0.2, lwd=0, lwd.ticks=1)
   
-  smaxs=rstan::extract(fit$fit,pars=c('prior_Smax','S_max'))
+  smaxs=rstan::extract(fit$fit,pars=c('prior_Smax','Smax'))
   hist(c(smaxs$prior_Smax/1e3),breaks=30,freq=T,xlim=c(0,max(c(smaxs[[1]]/1e3,smaxs[[2]]/1e3))),xlab='spawners (1000s)',col=adjustcolor('darkorange',alpha.f=0.5),border='white',main='')
   par(new=T)
-  hist(c(smaxs$S_max/1e3),breaks=30,freq=T,xlim=c(0,max(c(smaxs[[1]]/1e3,smaxs[[2]]/1e3))),xlab='spawners (1000s)',col=adjustcolor('navy',alpha.f=0.5),border='white',main='',yaxt='n')
+  hist(c(smaxs$Smax/1e3),breaks=30,freq=T,xlim=c(0,max(c(smaxs[[1]]/1e3,smaxs[[2]]/1e3))),xlab='spawners (1000s)',col=adjustcolor('navy',alpha.f=0.5),border='white',main='',yaxt='n')
   text('Smax prior',x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*0.1),col='darkorange')
   text('Smax posterior',x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*0.2),col='navy')
   
   plot(c(data$R/1e3)~c(data$S/1e3),xlab='spawners (1000s)',ylab='recruits (1000s)',type='n',ylim=c(0,max(data$R/1e3)),xlim=c(0,max(data$S/1e3)*1.2),bty='l')
   sn=seq(0,max(data$S))
   muR=exp(median(fit$samples[,grepl('log_a',colnames(fit$samples))])-median(fit$samples[,grepl('b',colnames(fit$samples))])*sn)*sn
-  lines(c(muR/1e3)~c(sn/1e3))
-  par(new=T)
-  hist(c(smaxs$prior_Smax/1e3),breaks=30,freq=T,xlim=c(0,max(data$S/1e3)*1.2),ylim=c(0,1e3),xlab='',col=adjustcolor('darkorange',alpha.f=0.5),border='white',main='',xaxt='n',yaxt='n',ylab='')
-  par(new=T)
-  hist(c(smaxs$S_max/1e3),breaks=30,freq=T,xlim=c(0,max(data$S/1e3)*1.2),ylim=c(0,1e3),xlab='',col=adjustcolor('navy',alpha.f=0.5),border='white',main='',yaxt='n',xaxt='n',ylab='')
-  text(y=c(data$R/1e3),x=c(data$S/1e3),data$by,col='darkred',cex=0.8,font=2) 
+  lines(c(muR/1e3)~c(sn/1e3),lwd=3)
+  dsmax=density(c(smaxs$Smax/1e3),bw=0.1)
+  dsy=dsmax$y/max(dsmax$y)*par('usr')[4]
+  lines(dsy~dsmax$x,col='navy',lwd=3)
+  text(y=c(data$R/1e3),x=c(data$S/1e3),data$by,col='darkred',cex=0.8,font=2)
+  text(x=max(data$S/1e3),y=max(data$R/1e3)*0.8,'Smax posterior',col='navy')
   if(pdf==T){
     dev.off()
     dev.off()

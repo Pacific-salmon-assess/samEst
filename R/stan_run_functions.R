@@ -1,6 +1,6 @@
 #' Simple Ricker model estimated with stan
 #'
-#' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series.
+#' @param data A list or data frame containing complete vectors for: brood year (by), Spawners (s) and log(Recruits/Spawners) (logRS) time series.
 #' @param AC Logical. Are residuals autocorrelated? Default is FALSE
 #' @param smax_priors Options for custom Smax (capacity) priors - 2 values for the mean and the scale (variance). Defaults to mean = half maximum observed spawners, scale = max. observed spawners (from data) 
 #' @param control output of stancontrol
@@ -32,10 +32,11 @@
 #' data(harck)
 #' rickerstan(data=harck)
 #' 
-ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterior=FALSE, control = stancontrol(adapt_delta=0.99), warmup=300, chains = 6, iter = 1000,...) {
- 
-  if(is.null(mod)==T){
-    sm=samEst::sr_mod(type='static',ac=ac,par='n')
+ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,smax_dists=c('normal','lognormal','cauchy'),mod=NULL,full_posterior=TRUE, control = stancontrol(adapt_delta=0.99), warmup=300, chains = 6, iter = 1000,...) {
+  smax_dists=match.arg(smax_dists,choices=c('normal','lognormal','cauchy'))
+
+    if(is.null(mod)==T){
+    sm=sr_mod(type='static',ac=ac,par='n')
   }else{sm=mod}
 
   if(is.null(smax_priors)==TRUE){
@@ -46,6 +47,16 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterio
                 S=data$S,
                 pSmax_mean=max(data$S)/2,
                 pSmax_sig=max(data$S)*2)
+    if(smax_dists=='normal'){
+      datm$smax_dist=1
+    }
+    if(smax_dists=='lognormal'){
+      datm$smax_dist=2
+    }
+    if(smax_dists=='cauchy'){
+      datm$smax_dist=1
+    }
+    
   }else{
       datm = list(N=nrow(data),
                   L=max(data$by)-min(data$by)+1,
@@ -54,6 +65,15 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterio
                   S=data$S,
                   pSmax_mean=smax_priors[1],
                   pSmax_sig=smax_priors[2])
+      if(smax_dists=='normal'){
+        datm$smax_dist=1
+      }
+      if(smax_dists=='lognormal'){
+        datm$smax_dist=2
+      }
+      if(smax_dists=='cauchy'){
+        datm$smax_dist=3
+      }
     }
 
   fit<-rstan::sampling(sm, data=datm,
@@ -140,33 +160,50 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterio
 #' data(harck)
 #' ricker_rw_stan(data=harck)
 #' 
-ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,full_posterior=FALSE,control = stancontrol(), mod=NULL,
+ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,smax_dists=c('normal','lognormal','cauchy'),full_posterior=TRUE,control = stancontrol(), mod=NULL,
   warmup=300,  chains = 6, iter = 1000,...) {
-
+  par=match.arg(par,choices=c('a','b','both'))
+  smax_dists=match.arg(smax_dists,choices=c('normal','lognormal','cauchy'))
+  
   if(is.null(mod)==T){
-    sm=samEst::sr_mod(type='rw',par=par)
+    sm=sr_mod(type='rw',par=par)
   }else{sm=mod}
   
   if(is.null(smax_priors)==TRUE){
+    datm = list(N=nrow(data),
+                L=max(data$by)-min(data$by)+1,
+                ii=data$by-min(data$by)+1,
+                R_S =data$logRS,
+                S=data$S,
+                pSmax_mean=max(data$S)/2,
+                pSmax_sig=max(data$S)*2)
+    if(smax_dists=='normal'){
+      datm$smax_dist=1
+    }
+    if(smax_dists=='lognormal'){
+      datm$smax_dist=2
+    }
+    if(smax_dists=='cauchy'){
+      datm$smax_dist=3
+    }
     
-    datm <- list(N=nrow(data),
-                 L=max(data$by)-min(data$by)+1,
-                 ii=data$by-min(data$by)+1,
-                 R_S =data$logRS,
-                 S=data$S,
-                 pSmax_mean=max(data$S)/2,
-                 pSmax_sig=max(data$S)*2)
-  }
-  
-  if(is.null(smax_priors)==FALSE){
-    
-    datm <- list(N=nrow(data),
-         L=max(data$by)-min(data$by)+1,
-         ii=data$by-min(data$by)+1,
-         R_S =data$logRS,
-         S=data$S,
-         pSmax_mean=smax_priors[1],
-         pSmax_sig=smax_priors[2])
+  }else{
+    datm = list(N=nrow(data),
+                L=max(data$by)-min(data$by)+1,
+                ii=data$by-min(data$by)+1,
+                R_S =data$logRS,
+                S=data$S,
+                pSmax_mean=smax_priors[1],
+                pSmax_sig=smax_priors[2])
+    if(smax_dists=='normal'){
+      datm$smax_dist=1
+    }
+    if(smax_dists=='lognormal'){
+      datm$smax_dist=2
+    }
+    if(smax_dists=='cauchy'){
+      datm$smax_dist=3
+    }
   }
   
   fit <- rstan::sampling(sm, data = datm,
@@ -277,22 +314,67 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,full_pos
 #' data(harck)
 #' ricker_hmm_stan(data=harck)
 #' 
-ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors=NULL, dirichlet_stasis_prior=2, full_posterior=FALSE,
+ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors=NULL,smax_dists=c('normal','lognormal','cauchy'), dirichlet_stasis_prior=2, full_posterior=FALSE,
   control = stancontrol(), warmup=300,  chains = 6, iter = 1000, mod=NULL,...) {
   #par='both'
+  par=match.arg(par,choices=c('a','b','both'))
+  smax_dists=match.arg(smax_dists,choices=c('normal','lognormal','cauchy'))
+  
+  dirichlet_prior<-matrix(c(dirichlet_stasis_prior,1,1,dirichlet_stasis_prior),nrow=k_regime,ncol=k_regime)
   
   if(is.null(mod)){
     sm=samEst::sr_mod(type='hmm',par=par)
   }else{
-   sm <-mod
+    sm <-mod
   }
+  
+  if(is.null(smax_priors)==TRUE){
+    datm = list(N=nrow(data),
+                L=max(data$by)-min(data$by)+1,
+                ii=data$by-min(data$by)+1,
+                R_S =data$logRS,
+                S=data$S,
+                K=k_regime,
+                alpha_dirichlet=dirichlet_prior,
+                pSmax_mean=max(data$S)/2,
+                pSmax_sig=max(data$S)*2)
+    if(smax_dists=='normal'){
+      datm$smax_dist=1
+    }
+    if(smax_dists=='lognormal'){
+      datm$smax_dist=2
+    }
+    if(smax_dists=='cauchy'){
+      datm$smax_dist=3
+    }
+    
+  }else{
+    datm = list(N=nrow(data),
+                L=max(data$by)-min(data$by)+1,
+                ii=data$by-min(data$by)+1,
+                R_S =data$logRS,
+                S=data$S,
+                K=k_regime,
+                alpha_dirichlet=dirichlet_prior,
+                pSmax_mean=smax_priors[1],
+                pSmax_sig=smax_priors[2])
+    if(smax_dists=='normal'){
+      datm$smax_dist=1
+    }
+    if(smax_dists=='lognormal'){
+      datm$smax_dist=2
+    }
+    if(smax_dists=='cauchy'){
+      datm$smax_dist=3
+    }
+  }
+  
   #if(is.null(sm_ext)){
   #  sm <- sr_mod(type='hmm',ac=FALSE,par=par,loglik=FALSE, modelcode=TRUE)
   #}else{
   #  sm <- sm_ext
   #}
  
-  dirichlet_prior<-matrix(c(dirichlet_stasis_prior,1,1,dirichlet_stasis_prior),nrow=k_regime,ncol=k_regime)
  
   if(is.null(smax_priors)==TRUE){
   fit <- rstan::sampling(sm, 
@@ -367,11 +449,11 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors
 #'   allowed.
 #' @param iter.max Maximum number of iterations allowed.
 #' @param ... Anything else. See the 'Control parameters' section of
-#'   [rstan::sampling].
+#'   [rstan::stan].
 #'
 #' @export
-stancontrol <- function(adapt_delta = 0.99,  ...) {
-  list(adapt_delta = 0.99, ...)
+stancontrol <- function(adapt_delta = 0.99,max_treedepth = 20,...) {
+  list(adapt_delta = 0.99,max_treedepth = 20,...)
 }
 
 
