@@ -36,7 +36,8 @@ Imports:
     rstan (>= 2.32.0),
     ggplot2,
     cowplot,
-    gsl
+    gsl, 
+    stats
 RoxygenNote: 7.3.2
 LazyData: true
 Suggests: 
