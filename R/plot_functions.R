@@ -24,7 +24,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
     if(form=='tmb'){
       pred_df=data.frame(pred=exp(mod$logalpha-mod$beta*x_new)*x_new,x_new=x_new)
     }
-    pred_df[,2:ncol(pred_df)]=pred_df[,2:ncol(pred_df)]/1e3
+    pred_df=pred_df/1e3
     
     plot=ggplot2::ggplot(df, aes(S/1e3, R/1e3)) +
       geom_line(data=pred_df,aes(x=x_new,y=pred),linewidth=1.3)+
@@ -145,7 +145,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
             }
             pred_df[,2:ncol(pred_df)]=pred_df[,2:ncol(pred_df)]/1e3
             beta_df=data.frame(by=seq(min(df$by),max(df$by)),med=apply(post$S_max,2,median),l90=apply(post$S_max,2,quantile,0.1),u90=apply(post$S_max,2,quantile,0.9))
-            beta_df[,2:4]=beta_df[,2:4]/1e3
+            beta_df[,2]=beta_df[,2]/1e3
             
             plot2=ggplot2::ggplot(beta_df, aes(by,med)) +
               geom_line(aes(x=by,y=med),linewidth=1.3)+
@@ -165,7 +165,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
             for(n in 1:length(by_q)){
               pred_df[,1+n]=exp(mod$logalpha-mod$beta[match(by_q[n],df$by)]*x_new)*x_new
             }
-            pred_df[,2:ncol(pred_df)]=pred_df[,2:ncol(pred_df)]/1e3
+            pred_df=pred_df/1e3
             beta_df=data.frame(by=df$by,med=mod$Smax)
             beta_df[,2]=beta_df[,2]/1e3
             
@@ -240,7 +240,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
           for(n in 1:length(by_q)){
             pred_df[,1+n]=exp(median(post$log_a[,match(by_q[n],df$by)])-median(post$b[,match(by_q[n],df$by)])*x_new)*x_new
           }
-          pred_df[,2:ncol(pred_df)]=pred_df[,2:ncol(pred_df)]/1e3
+          pred_df=pred_df/1e3
           alphabeta_df=data.frame(by=seq(min(df$by),max(df$by)),a_med=apply(post$log_a,2,median),a_l90=apply(post$log_a,2,quantile,0.15),a_u90=apply(post$log_a,2,quantile,0.85),b_med=apply(post$S_max,2,median),b_l90=apply(post$S_max,2,quantile,0.1),b_u90=apply(post$S_max,2,quantile,0.9))
           alphabeta_df[,5:7]=alphabeta_df[,5:7]/1e3
             
