@@ -381,7 +381,7 @@ model{
   
   //variance terms
   sigma_tot ~ gamma(2,1); //half normal on variance (lower limit of zero)
-  F_rw ~ beta(1,2); //fraction attributed to random walk in productivity  
+  F_rw ~ beta(2,4); //fraction attributed to random walk in productivity  
  
   for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - b*S[n], sigma); 
   
