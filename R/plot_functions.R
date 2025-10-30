@@ -126,7 +126,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
             hjust = 0.5,
           size=18)
         
-        legend = cowplot::get_legend(plot1)
+        legend=suppressWarnings(cowplot::get_legend(plot1))
         
         plot_rw_a=cowplot::plot_grid(plot1 + theme(legend.position="none"),
                       plot2 + theme(legend.position="none"),
@@ -216,7 +216,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
                 axis.text=element_text(face="bold",size=14),axis.title = element_text(face="bold",size=14),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
 
         
-        legend = cowplot::get_legend(plot1)
+        legend=suppressWarnings(cowplot::get_legend(plot1))
         
         titleg <- cowplot::ggdraw() + 
           cowplot::draw_label(
@@ -336,7 +336,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
                 axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
         
         
-        legend = cowplot::get_legend(plot1)
+        legend=suppressWarnings(cowplot::get_legend(plot1))
         
         titleg <- cowplot::ggdraw() + 
           cowplot::draw_label(
@@ -429,7 +429,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
           
           
           
-          legend = cowplot::get_legend(plot1)
+          legend=suppressWarnings(cowplot::get_legend(plot1))
           
           titleg <- cowplot::ggdraw() + 
             cowplot::draw_label(
@@ -508,7 +508,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
           
          
           
-          legend = cowplot::get_legend(plot1)
+          legend=suppressWarnings(cowplot::get_legend(plot1))
           
           titleg <- cowplot::ggdraw() + 
             cowplot::draw_label(
@@ -584,7 +584,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
                   strip.text = element_text(face="bold", size=12),
                   axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
           
-          legend = cowplot::get_legend(plot1)
+          legend=suppressWarnings(cowplot::get_legend(plot1))
           
           plot_hmm_ab=cowplot::plot_grid(plot1 + theme(legend.position="none"),
                                         plot2 + theme(legend.position="none"),
