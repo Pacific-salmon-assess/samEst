@@ -365,7 +365,7 @@ transformed parameters{
 }  
 model{
   //priors
-  log_a0 ~ normal(1.5,2.5); //initial productivity - wide prior
+  log_a0 ~ normal(1.5,5); //initial productivity - wide prior
 
  if(smax_dist==1){
   Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
@@ -381,7 +381,7 @@ model{
   
   //variance terms
   sigma_tot ~ gamma(2,1); //half normal on variance (lower limit of zero)
-  F_rw ~ beta(1,2); //fraction attributed to random walk in productivity  
+  F_rw ~ beta(2,5); //fraction attributed to random walk in productivity  
  
   for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - b*S[n], sigma); 
   
@@ -457,7 +457,7 @@ transformed parameters{
 }  
 model{
   //priors
-  log_a0 ~ normal(1.5,2.5); //initial productivity - wide prior
+  log_a0 ~ normal(1.5,5); //initial productivity - wide prior
  
   if(smax_dist==1){
   Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
@@ -473,7 +473,7 @@ model{
   
  //variance terms
   sigma_tot ~ gamma(2,1); //half normal on variance (lower limit of zero)
-  F_rw ~ beta(1,2); //fraction attributed to random walk in productivity  
+  F_rw ~ beta(2,5); //fraction attributed to random walk in productivity  
  
   for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - b*S[n], sigma); 
   
@@ -554,7 +554,7 @@ model{
   } 
   //variance terms
   sigma_tot ~ gamma(2,1);
-  F_rw ~ beta(1,2); //fraction attributed to random walk in productivity   
+  F_rw ~ beta(2,5); //fraction attributed to random walk in productivity   
  
   b_dev ~ std_normal();
  for(n in 1:N) R_S[n] ~ normal(log_a-b[ii[n]]*S[n], sigma);
@@ -649,7 +649,7 @@ model{
   } 
   //variance terms
   sigma_tot ~ gamma(2,1);
-  F_rw ~ beta(1,2); //fraction attributed to random walk in productivity   
+  F_rw ~ beta(2,5); //fraction attributed to random walk in productivity   
  
   b_dev ~ std_normal();
  for(n in 1:N) R_S[n] ~ normal(log_a-b[ii[n]]*S[n], sigma);
@@ -713,7 +713,7 @@ transformed parameters{
 
 model{
   //priors
-  log_a0 ~ normal(1.5,2.5); //initial productivity
+  log_a0 ~ normal(1.5,5); //initial productivity
   if(smax_dist==1){
   Smax0 ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
   }
@@ -809,7 +809,7 @@ transformed parameters{
 
 model{
   //priors
-  log_a0 ~ normal(1.5,2.5); //initial productivity
+  log_a0 ~ normal(1.5,5); //initial productivity
   Smax0 ~ normal(smax_pr,smax_pr_sig); //initial capacity
   
   //variance terms
@@ -917,7 +917,7 @@ model{
   Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
   }
   
-  sigma ~ normal(0.5,1); //half normal on variance (lower limit of zero)
+  sigma ~ gamma(2,1); //half normal on variance (lower limit of zero)
   pi1~ dirichlet(rep_vector(1,K));
 
   for(k in 1:K){
@@ -1098,7 +1098,7 @@ log_a ~ normal(1.5,2.5);
   if(smax_dist==3){
   Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
   }
-sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+sigma ~ gamma(2,1); //half normal on variance (lower limit of zero)
 
 for(k in 1:K){
 A[k,] ~ dirichlet(alpha_dirichlet[k,]);
@@ -1259,7 +1259,7 @@ if(smax_dist==1){
   Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
   }
 
-sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+sigma ~ gamma(2,1); //half normal on variance (lower limit of zero)
   
 for(k in 1:K){
 A[k,] ~ dirichlet(alpha_dirichlet[k,]);
@@ -1438,7 +1438,7 @@ if(smax_dist==1){
   Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
   }
 
-sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+sigma ~ gamma(2,1); //half normal on variance (lower limit of zero)
 
 for(k in 1:K){
 A[k,] ~ dirichlet(alpha_dirichlet[k,]);
@@ -1603,7 +1603,7 @@ array[K] vector[N] logalpha;
   }
   
   
-      sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+      sigma ~ gamma(2,1); //half normal on variance (lower limit of zero)
       
       for(k in 1:K){
         A[k,] ~ dirichlet(alpha_dirichlet[k,]);
@@ -1777,7 +1777,7 @@ log_a ~ normal(1.5,2.5);
   Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
   }
 
-sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+sigma ~gamma(2,1); //half normal on variance (lower limit of zero)
 
 for(k in 1:K){
 A[k,] ~ dirichlet(alpha_dirichlet[k,]);

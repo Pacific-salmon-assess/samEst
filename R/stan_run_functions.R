@@ -54,7 +54,7 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,smax_dists=c('normal',
       datm$smax_dist=2
     }
     if(smax_dists=='cauchy'){
-      datm$smax_dist=1
+      datm$smax_dist=3
     }
     
   }else{
@@ -160,7 +160,7 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,smax_dists=c('normal',
 #' data(harck)
 #' ricker_rw_stan(data=harck)
 #' 
-ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,smax_dists=c('normal','lognormal','cauchy'),full_posterior=TRUE,control = stancontrol(), mod=NULL,
+ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,smax_dists=c('normal','lognormal','cauchy'),full_posterior=TRUE,control = stancontrol(adapt_delta=0.99), mod=NULL,
   warmup=300,  chains = 6, iter = 1000,...) {
   par=match.arg(par,choices=c('a','b','both'))
   smax_dists=match.arg(smax_dists,choices=c('normal','lognormal','cauchy'))
