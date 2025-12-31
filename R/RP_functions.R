@@ -124,7 +124,7 @@ stan_regime_rps<- function(m,par=c('a','b','both'),lambertW=FALSE){
   d=extract(m)
   if(par=='a'){
     log_a=apply(d$log_a,2,median)
-    beta=median(d$b)
+    beta=median(d$beta)
     S_max=median(d$S_max)
     gamma=cbind(apply(d$gamma[,,1],2,median),apply(d$gamma[,,2],2,median))
     zstar=apply(d$zstar,2,median)
