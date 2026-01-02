@@ -45,7 +45,7 @@ static.sr.plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.pa
   points(df$R~df$S,pch=21,bg=col.p,cex=1.5)
   text(x=df$S-max(df$S)*0.01,y=df$R+max(df$R)*0.03,df$by,cex=0.7)
   
-  if(plot.params=TRUE){
+  if(plot.params==TRUE){
     text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]*0.01,paste('log(a):',round(ric_ac$logalpha,2),sep=' '),adj=0)
     text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.1,x=par('usr')[2]*0.01,paste('Smax:',round(ric_ac$Smax),sep=' '),adj=0,col='darkred')
     text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.15,x=par('usr')[2]*0.01,paste('Smsy:',round(ric_ac$Smsy),sep=' '),adj=0,col='navy')
@@ -55,7 +55,7 @@ static.sr.plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.pa
       text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]*0.01,paste('rho:',round(ric_ac$rho,2),sep=' '),adj=0)
     }
   }
-  if(resids=TRUE){
+  if(resids==TRUE){
     plot(mod$residuals~df$by,type='n',bty='l',xlab='Brood cohort year',ylab='Productivity residual')
     abline(h=0,lty=5)
     lines(mod$residuals~df$by,col=adjustcolor('black',alpha.f=0.2))
