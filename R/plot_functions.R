@@ -11,7 +11,7 @@
 #' @examples
 #' sr_plot(type='static',df=df,form='stan',df=df,mod=f1,pdf=FALSE)
 
-static.sr.plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.params=FALSE,resids=FALSE,hpd=NULL){
+static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.params=FALSE,resids=FALSE,hpd=NULL){
   if(is.null(title)==T){title=''}
   if(resids==TRUE){
     par(mfrow=c(2,1));fig.pars=c(6,8)
