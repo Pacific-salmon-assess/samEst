@@ -17,7 +17,7 @@ static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.pa
     par(mfrow=c(2,1));fig.pars=c(6,8)
   }
   if(make.pdf==TRUE){
-    pdf(paste(title,'_sr.pdf',sep=''),fig.width=fig.pars[1],fig.height=fig.pars[2])
+    pdf(paste(title,'_sr.pdf',sep=''),width=fig.pars[1],height=fig.pars[2])
   }
   plot(df$R~df$S,xlim=c(0,max(df$S)),ylim=c(0,max(df$R)),type='n',bty='l',xlab='Spawners',ylab='Recruits',main=title)
   abline(c(0,1),lty=5)
