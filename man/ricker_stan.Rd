@@ -6,11 +6,9 @@
 \usage{
 ricker_stan(
   data,
-  ac = FALSE,
+  AC = FALSE,
   smax_priors = NULL,
-  smax_dists = c("normal", "lognormal", "cauchy"),
   mod = NULL,
-  full_posterior = TRUE,
   control = stancontrol(adapt_delta = 0.99),
   warmup = 300,
   chains = 6,
@@ -21,7 +19,9 @@ ricker_stan(
 \arguments{
 \item{data}{A list or data frame containing complete vectors for: brood year (by), Spawners (s) and log(Recruits/Spawners) (logRS) time series.}
 
-\item{smax_priors}{Options for custom Smax (capacity) priors - 2 values for the mean and the scale (variance). Defaults to mean = half maximum observed spawners, scale = max. observed spawners (from data)}
+\item{AC}{Logical. Are residuals autocorrelated? Default is FALSE}
+
+\item{smax_priors}{User-specified smax priors, sampled from a normal distribution, should be formatted as: c(mean, sd). Defaults to mean = half maximum observed spawners, sd = max. observed spawners (from time series).}
 
 \item{control}{output of stancontrol}
 
@@ -34,19 +34,22 @@ chain. The default is 200.}
 (including warmup). The default is 1000.}
 
 \item{...}{Anything else that would be passed to rstan::sampling}
-
-\item{AC}{Logical. Are residuals autocorrelated? Default is FALSE}
 }
 \value{
 a list containing the
 \itemize{
-\item alpha - median estimates for the alpha parameter vector
+\item data - input dataseries
+\item logalpha - median estimates for the log(alpha) parameter
 \item beta - median estimates for the beta parameter
-\item sigobs - median estimates for the observation error sigma
-\item stanfit - a stanfit model object
-\item mcmcsummary - summary over kept samples
-\item c_mcmcsummary - chain specific summary
-\item list of samples
+\item Smax - median estimates for the Smax parameter
+\item Smsy - median estimates for the Smsy parameter
+\item Umsy - median estimates for the Umsy parameter
+\item sigma - median estimates for the sigma parameter
+\item rho - median estimates for the rho parameter
+\item residuals - median estimates for each epsilon (residual) parameter
+\item summary - summary of stan model fit
+\item full_posterior - all posterior samples of the above parameters
+\item stanfit - the stanfit model object
 }
 }
 \description{
@@ -54,6 +57,6 @@ Simple Ricker model estimated with stan
 }
 \examples{
 data(harck)
-rickerstan(data=harck)
+ricker_stan(data=harck)
 
 }

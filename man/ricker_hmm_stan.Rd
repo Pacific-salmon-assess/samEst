@@ -2,7 +2,7 @@
 % Please edit documentation in R/stan_run_functions.R
 \name{ricker_hmm_stan}
 \alias{ricker_hmm_stan}
-\title{random walks Ricker model estimated with stan}
+\title{Hidden markov (regime shift) Ricker model estimated with stan}
 \usage{
 ricker_hmm_stan(
   data,
@@ -43,8 +43,6 @@ chain. The default is 200.}
 
 \item{sm_ext}{Default is null, external stan hmm model. Implemented to speed up simulation evaluation, use with caution.}
 
-\item{lambertW}{Logical, indicating if lambertW functions should be used in stan code, requires git installation from stan}
-
 \item{dirichlet_prior}{k_regime x k_regime matrix. Prior for transition probability matrix,
 if NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime)}
 }
@@ -61,7 +59,7 @@ a list containing the
 }
 }
 \description{
-random walks Ricker model estimated with stan
+Hidden markov (regime shift) Ricker model estimated with stan
 }
 \examples{
 data(harck)

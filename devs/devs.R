@@ -10,6 +10,7 @@
 devtools::document()
 devtools::load_all()
 
+
 #render the vignette
 devtools::build_rmd("vignettes/samEst.Rmd")
 usethis::use_logo("man/figures/samEst_large.png")
@@ -116,11 +117,11 @@ phmma2$logalpha
 phmma$beta
 phmma2$beta  
 
+
 phmma$sigma    
 phmma2$sigma     
 
-phmma$qij  
-phmma2$qij   
+phmma$qij  -phmma2$qij   
 
 phmma$Smsy  
 phmma2$Smsy    
@@ -137,10 +138,44 @@ phmma$regime
 phmma2$regime
 
 
-phmmb <- ricker_hmm_TMB(data=harck, tv.par='b')
-phmmb2 <- ricker_hmm_TMB2(data=harck, tv.par='b')
+phmmb <- ricker_hmm_TMB(data=harck, tv.par='b',priors_flag =1, optimiz=TRUE)
+phmmb2 <- ricker_hmm_TMB2(data=harck, tv.par='b',priors_flag = 1, optimiz=TRUE)
+
+phmmb$conv_problem
+phmmb2$conv_problem
 
 
+phmmb$logalpha
+phmmb2$logalpha
+
+
+phmmb$beta
+phmmb2$beta  
+
+phmmb$sigma    
+phmmb2$sigma     
+
+phmmb$qij  -phmmb2$qij   
+
+phmmb$Smsy  
+phmmb2$Smsy    
+
+phmmb$Smax
+phmmb2$Smax      
+
+phmmb$umsy     
+phmmb2$umsy
+
+phmmb$probregime
+phmmb2$probregime 
+
+phmmb$regime -phmmb2$regime
+
+phmmb$tmb_obj$report()$pnll
+phmmb2$tmb_obj$report()$pnll
+
+phmmb$tmb_obj$report()$nll
+phmmb2$tmb_obj$report()$nll
 
 #===============================
 #old tests

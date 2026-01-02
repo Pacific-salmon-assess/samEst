@@ -8,8 +8,6 @@ ricker_rw_stan(
   data,
   par = c("a", "b", "both"),
   smax_priors = NULL,
-  smax_dists = c("normal", "lognormal", "cauchy"),
-  full_posterior = TRUE,
   control = stancontrol(adapt_delta = 0.99),
   mod = NULL,
   warmup = 300,
@@ -19,9 +17,11 @@ ricker_rw_stan(
 )
 }
 \arguments{
-\item{data}{A data frame containing Spawners (S) and log(Recruits/Spawners) (R_S) time series. Use sr_format for the correct column names.}
+\item{data}{A list or data frame containing complete vectors for: brood year (by), Spawners (s) and log(Recruits/Spawners) (logRS) time series. Use sr_format for the correct column names.}
 
-\item{par}{Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters}
+\item{par}{Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters (both)}
+
+\item{smax_priors}{User-specified smax priors, sampled from a normal distribution, should be formatted as: c(mean, sd)}
 
 \item{control}{output of stancontrol}
 
@@ -34,21 +34,23 @@ chain. The default is 200.}
 (including warmup). The default is 1000.}
 
 \item{...}{Anything else that would be passed to rstan::sampling}
-
-\item{sm_ext}{Default is null, external stan rw model. Implemented to speed up simulation evaluation, use with caution.}
-
-\item{lambertW}{Logical, indicating if lambertW functions should be used in stan code, requires git installation from stan}
 }
 \value{
 a list containing the
 \itemize{
-\item alpha - median estimates for the alpha parameter vector
+\item data - input dataseries
+\item logalpha - median estimates for the log(alpha) parameter
 \item beta - median estimates for the beta parameter
-\item sigobs - median estimates for the observation error sigma
-\item stanfit - a stanfit model object
-\item mcmcsummary - summary over kept samples
-\item c_mcmcsummary - chain specific summary
-\item list of samples
+\item Smax - median estimates for the Smax parameter
+\item Smsy - median estimates for the Smsy parameter
+\item Umsy - median estimates for the Umsy parameter
+\item sigma - median estimates for the sigma parameter
+\item sigma_a - median estimates for the sigma_a parameter (variance attributed to random walk in log(alpha))
+\item sigma_b - median estimates for the sigma_b parameter (variance attributed to random walk in Smax)
+\item residuals - median estimates for each epsilon (residual) parameter
+\item summary - summary of stan model fit
+\item full_posterior - all posterior samples of the above parameters
+\item stanfit - the stanfit model object
 }
 }
 \description{

@@ -28,7 +28,7 @@ a time-varying 'rw' model, or a regime shift hidden Markov model 'hmm'}
 returns the compiled rstan code for a given S-R model
 }
 \description{
-Same as 'sr_mod' but does not include the lambert function for reference points (U_msy and)
+Same as 'sr_mod' but does not include the lambert function for reference points (U_msy and Smsy) and has LFO versions - compatible with Wor et al. 2025, Ecological Modelling
 }
 \examples{
 m2=sr_mod(type='static',ac = TRUE,par='n',lfo=T)
