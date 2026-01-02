@@ -16,6 +16,134 @@ usethis::use_logo("man/figures/samEst_large.png")
 
 
 
+#combine simple and AR
+
+p <- ricker_TMB(data=harck)
+p2 <- ricker_TMB2(data=harck)
+
+p$logalpha   
+p2$logalpha
+
+p$beta
+p2$beta
+
+p$Smax
+p2$Smax
+    
+p$sig      
+p2$sigma     
+p2$sigma_noar
+
+p$Smsy
+p2$Smsy
+
+p$umsy
+p2$umsy
+           
+    
+p$rho   
+p2$rho
+
+pac<-ricker_TMB(data=harck, AC=TRUE)
+pac2<-ricker_TMB2(data=harck, AC=TRUE)
+
+
+
+pac$logalpha   
+pac2$logalpha
+
+pac$beta
+pac2$beta
+
+pac$Smax
+pac2$Smax
+    
+pac$sigar      
+pac2$sigma     
+pac$sig      
+pac2$sigma_noar
+
+pac$Smsy
+pac2$Smsy
+
+pac$umsy
+pac2$umsy
+           
+    
+pac$rho   
+pac2$rho
+
+
+phmm <- ricker_hmm_TMB(data=harck, tv.par='both')
+phmm2 <- ricker_hmm_TMB2(data=harck, tv.par='both')
+
+
+phmm$logalpha
+phmm2$logalpha
+
+phmm$beta
+phmm2$beta  
+
+phmm$sigma    
+phmm2$sigma     
+
+phmm$qij  
+phmm2$qij   
+
+phmm$Smsy  
+phmm2$Smsy    
+
+phmm$Smax
+phmm2$Smax      
+
+phmm$umsy     
+phmm2$umsy
+
+phmm$probregime-phmm2$probregime 
+
+phmm$regime 
+phmm2$regime
+
+
+#nned to change the priors
+
+phmma <- ricker_hmm_TMB(data=harck, tv.par='a')
+phmma2 <- ricker_hmm_TMB2(data=harck, tv.par='a')
+
+phmma$logalpha
+phmma2$logalpha
+
+phmma$beta
+phmma2$beta  
+
+phmma$sigma    
+phmma2$sigma     
+
+phmma$qij  
+phmma2$qij   
+
+phmma$Smsy  
+phmma2$Smsy    
+
+phmma$Smax
+phmma2$Smax      
+
+phmma$umsy     
+phmma2$umsy
+
+phmma$probregime-phmma2$probregime 
+
+phmma$regime 
+phmma2$regime
+
+
+phmmb <- ricker_hmm_TMB(data=harck, tv.par='b')
+phmmb2 <- ricker_hmm_TMB2(data=harck, tv.par='b')
+
+
+
+#===============================
+#old tests
 p <- ricker_TMB(data=harck)
 pac<-ricker_TMB(data=harck, AC=TRUE)
 ptva<- ricker_rw_TMB(data=harck,tv.par="a")

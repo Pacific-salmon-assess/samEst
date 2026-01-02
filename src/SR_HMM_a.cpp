@@ -222,7 +222,7 @@ Type objective_function<Type>::operator() ()
   //priors
   Type pnll = Type(0.0);
   if(priors_flag == 1){
-    vector<Type> pi_prior(k_regime);
+    
  
     Type logbeta = log(beta);
     //pnll -= dnorm(logbeta,Type(-12.0),Type(3.0),true);
@@ -234,7 +234,6 @@ Type objective_function<Type>::operator() ()
     if(stan_flag) pnll -= logsigma;
    
     for(int j = 0;j < k_regime;++j){
-      pi_prior(j) = Type(1.0);
       
       pnll -=dnorm(logalpha(j),Type(1.5),Type(2.5),true);
      

@@ -10,7 +10,7 @@ ricker_rw_stan(
   smax_priors = NULL,
   smax_dists = c("normal", "lognormal", "cauchy"),
   full_posterior = TRUE,
-  control = stancontrol(),
+  control = stancontrol(adapt_delta = 0.99),
   mod = NULL,
   warmup = 300,
   chains = 6,

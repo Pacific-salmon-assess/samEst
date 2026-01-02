@@ -60,11 +60,11 @@ Type dlnorm(Type x, Type meanlog, Type sdlog, int give_log=0){
 template<class Type>
 Type objective_function<Type>::operator() ()
 {
-  DATA_VECTOR(obs_S);    // observed  Spawner
-  DATA_VECTOR(obs_logRS);   // observed log recruitment
-  DATA_UPDATE(obs_logRS);
+  DATA_VECTOR(S);    // observed  Spawner
+  DATA_VECTOR(logRS);   // observed log recruitment
+  DATA_UPDATE(logRS); // used only if trying to compute effective degrees of freedom
   DATA_INTEGER(priors_flag); //flag indicating wether or not priors should be used
-  DATA_INTEGER(stan_flag); //flag indicating wether or not 
+  DATA_INTEGER(stan_flag); //flag indicating wether or not to use TMBstan and do the Jacobian adjustment
 
   DATA_SCALAR(sig_p_sd); //sd for sigma prior
   DATA_SCALAR(logb_p_sd); //sd for logb prior
@@ -77,21 +77,21 @@ Type objective_function<Type>::operator() ()
 
   PARAMETER(logalpha);
   PARAMETER(logbeta);
-  PARAMETER(logsigobs);
+  PARAMETER(logsigma);
   PARAMETER(rho);
   
   
-  int timeSteps=obs_logRS.size();
+  int timeSteps=logRS.size();
 
   Type rhoo = minus_one_to_one(rho);
 
   
   Type beta = exp(logbeta);
-  Type sigobs = exp(logsigobs);
+  Type sigma_noar = exp(logsigma);
   Type Smax  = Type(1.0)/beta;
   
 
-  Type sigAR  = sigobs*sqrt(1-pow(rhoo,2));
+  Type sigma  = sigma_noar*sqrt(1-pow(rhoo,2));
 
   
   //priors - based on evaluation done with the prior predictive check
@@ -105,25 +105,24 @@ Type objective_function<Type>::operator() ()
     
     pnll -= dnorm(logbeta,logb_p_mean,logb_p_sd,true);
     
-    pnll -= dnorm(sigobs,Type(0.0),sig_p_sd,true) - log(pnorm(Type(0.0), Type(0.0),sig_p_sd));
-    if(stan_flag) pnll -= logsigobs;
+    pnll -= dnorm(sigma_noar,Type(0.0),sig_p_sd,true) - log(pnorm(Type(0.0), Type(0.0),sig_p_sd));
+    if(stan_flag) pnll -= logsigma;
   }
   
   vector<Type> pred_logRS(timeSteps), pred_logR(timeSteps), residuals(timeSteps) ;
  
-  pred_logRS(0) = logalpha - beta * obs_S(0) ;
-  pred_logR(0) = pred_logRS(0) + log(obs_S(0));
-  residuals(0) = obs_logRS(0) - pred_logRS(0);
+  pred_logRS(0) = logalpha - beta * S(0) ;
+  pred_logR(0) = pred_logRS(0) + log(S(0));
+  residuals(0) = logRS(0) - pred_logRS(0);
     
-  nll+= -dnorm(obs_logRS(0),pred_logRS(0),sigobs,true);
+  nll+= -dnorm(logRS(0),pred_logRS(0),sigma_noar,true);
 
   for(int i=1;i<timeSteps;i++){
-    if(!isNA(obs_logRS(i))){
-      
-      pred_logRS(i) = logalpha - beta * obs_S(i) ;
-      pred_logR(i) = pred_logRS(i) + log(obs_S(i));
-      residuals(i) = obs_logRS(i) - pred_logRS(i);     
-      nll+=-dnorm(obs_logRS(i),pred_logRS(i) + residuals(i-1) * rhoo ,sigAR,true);      
+    if(!isNA(logRS(i))){     
+      pred_logRS(i) = logalpha - beta * S(i) ;
+      pred_logR(i) = pred_logRS(i) + log(S(i));
+      residuals(i) = logRS(i) - pred_logRS(i);     
+      nll+=-dnorm(logRS(i),pred_logRS(i) + residuals(i-1) * rhoo ,sigma,true);      
     } 
   }
   
@@ -135,15 +134,15 @@ Type objective_function<Type>::operator() ()
   Type ans = nll + pnll;
 
   Type pred_oos = logalpha - beta * x_oos+ residuals(timeSteps-1) * rhoo;
-  Type log_lik_oos = dnorm(y_oos,pred_oos,sigAR,true);
+  Type log_lik_oos = dnorm(y_oos,pred_oos,sigma,true);
 
   REPORT(logalpha)
   REPORT(beta)
   REPORT(rhoo)
   REPORT(pred_logRS)
   REPORT(residuals)
-  REPORT(sigobs)
-  REPORT(sigAR)
+  REPORT(sigma_noar)
+  REPORT(sigma)
   REPORT(Smax)
   REPORT(umsy)
   REPORT(Smsy)
@@ -153,9 +152,9 @@ Type objective_function<Type>::operator() ()
  
   ADREPORT(logalpha);
   ADREPORT(beta);
-  REPORT(rhoo);
-  ADREPORT(sigobs);
-  ADREPORT(sigAR);
+  ADREPORT(rhoo);
+  ADREPORT(sigma);
+  ADREPORT(sigma_noar);
   ADREPORT(umsy);
   ADREPORT(Smsy);
   

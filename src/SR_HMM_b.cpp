@@ -145,6 +145,7 @@ Type objective_function<Type>::operator() ()
   
   DATA_INTEGER(priors_flag);
   DATA_INTEGER(stan_flag);
+  DATA_SCALAR(sig_p_sd); //sd for sigma prior
 
   DATA_SCALAR(logb_p_mean); //mean for logb prior
   DATA_SCALAR(logb_p_sd); //sd for logb prior
@@ -224,16 +225,16 @@ Type objective_function<Type>::operator() ()
  //priors
   Type pnll = Type(0.0);
   if(priors_flag == 1){
-    vector<Type> pi_prior(k_regime);
+    
  
     
     pnll -=dnorm(logalpha,Type(1.5),Type(2.5),true);
     
-    pnll -= dnorm(sigma,Type(0.0),Type(1.0),true) - log(pnorm(Type(0.0), Type(0.0),Type(1.0)));
+    pnll -= dnorm(sigma,Type(0.0),sig_p_sd,true) - log(pnorm(Type(0.0), Type(0.0),sig_p_sd));
     if(stan_flag) pnll -= logsigma;
 
     for(int j = 0;j < k_regime;++j){
-      pi_prior(j) = Type(1.0);
+      
       Type logbeta = log(beta(j));    
       
       pnll -= dnorm(logbeta,logb_p_mean,logb_p_sd,true);

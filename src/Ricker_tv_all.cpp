@@ -72,7 +72,7 @@ template<class Type>
 Type objective_function<Type>::operator() ()
 {
   
-  DATA_IVECTOR( options_z );
+  DATA_IVECTOR(options_z);
   DATA_VECTOR(obs_S);    // observed  Spawner
   DATA_VECTOR(obs_logRS);   // observed recruitment
   DATA_UPDATE(obs_logRS);   // line to calculate EDF

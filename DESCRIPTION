@@ -38,7 +38,7 @@ Imports:
     cowplot,
     gsl, 
     stats
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 LazyData: true
 Suggests: 
     knitr,
