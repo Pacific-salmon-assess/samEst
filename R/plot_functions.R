@@ -1,8 +1,6 @@
-#' sr_plot function
+#' static.sr.plot function
 #'
 #' This function generates a stock-recruitment (S-R) model for rstan based on model inputs.
-#' @param type Specify whether to generate a 'static' S-R model, where parameters are time-invariant, 
-#' a time-varying 'tv' model, or a regime shift model 'regime'
 #' @param df stock-recruitment dataset. With columns R (recruits) and S (spawners) and by (brood year)
 #' @param form Either fit with Stan ('stan') or TMB ('tmb')
 #' @param mod a fitted Stan or TMB model
@@ -13,7 +11,63 @@
 #' @examples
 #' sr_plot(type='static',df=df,form='stan',df=df,mod=f1,pdf=FALSE)
 
-sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb'),sr_only=FALSE){
+static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.params=FALSE,resids=FALSE,hpd=NULL){
+  if(is.null(title)==T){title=''}
+  if(resids==TRUE){
+    par(mfrow=c(2,1));fig.pars=c(6,8)
+  }
+  if(make.pdf==TRUE){
+    pdf(paste(title,'_sr.pdf',sep=''),width=fig.pars[1],height=fig.pars[2])
+  }
+  plot(df$R~df$S,xlim=c(0,max(df$S)),ylim=c(0,max(df$R)),type='n',bty='l',xlab='Spawners',ylab='Recruits',main=title)
+  abline(c(0,1),lty=5)
+  if(is.null(ric_ac$tmb_obj)==FALSE){
+    lines(x=rep(mod$Smax,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smax)*mod$Smax),col='darkred',lwd=2)
+    lines(x=rep(mod$Smsy,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smsy)*mod$Smsy),col='navy',lwd=2)
+    p_n=exp(mod$logalpha-mod$beta*x_n)*x_n
+  }else{
+    logalpha=median(mod$samples$logalpha)
+    beta=median(mod$samples$beta)
+    if(is.null(hpd)==FALSE){
+     p=exp(mod$samples$logalpha-mod$samples$beta) 
+    }
+    lines(x=rep(mod$Smax,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smax)*mod$Smax),col='darkred',lwd=2)
+    lines(x=rep(mod$Smsy,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smsy)*mod$Smsy),col='navy',lwd=2)
+  }
+  
+  x_n=seq(0,max(df$S))
+  
+
+  
+  lines(p_n~x_n,lwd=3,col=adjustcolor('black',alpha.f=0.8))
+  col.p=viridis::viridis(length(d$by))
+  lines(df$R~df$S,col=adjustcolor('black',alpha.f=0.2),lwd=0.5)
+  points(df$R~df$S,pch=21,bg=col.p,cex=1.5)
+  text(x=df$S-max(df$S)*0.01,y=df$R+max(df$R)*0.03,df$by,cex=0.7)
+  
+  if(plot.params==TRUE){
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]*0.01,paste('log(a):',round(ric_ac$logalpha,2),sep=' '),adj=0)
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.1,x=par('usr')[2]*0.01,paste('Smax:',round(ric_ac$Smax),sep=' '),adj=0,col='darkred')
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.15,x=par('usr')[2]*0.01,paste('Smsy:',round(ric_ac$Smsy),sep=' '),adj=0,col='navy')
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.2,x=par('usr')[2]*0.01,paste('Umsy:',round(ric_ac$umsy,2),sep=' '),adj=0)
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.25,x=par('usr')[2]*0.01,paste('sigma:',round(ric_ac$sigar,2),sep=' '),adj=0)
+    if(is.na(mod$rho)==FALSE){
+      text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]*0.01,paste('rho:',round(ric_ac$rho,2),sep=' '),adj=0)
+    }
+  }
+  if(resids==TRUE){
+    plot(mod$residuals~df$by,type='n',bty='l',xlab='Brood cohort year',ylab='Productivity residual')
+    abline(h=0,lty=5)
+    lines(mod$residuals~df$by,col=adjustcolor('black',alpha.f=0.2))
+    points(mod$residuals~df$by,pch=21,bg=col.p,cex=1.5)
+  }
+  if(make.pdf==TRUE){
+  dev.off()
+  }
+  
+}
+
+sr_plot_old=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb'),sr_only=FALSE){
   if(type=='static'){ #static====
     x_new=seq(0,max(df$S),length.out=200)
 
