@@ -11,7 +11,7 @@
 #' @examples
 #' sr_plot(type='static',df=df,form='stan',df=df,mod=f1,pdf=FALSE)
 
-static.sr.plot(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.params=FALSE,resids=FALSE,hpd=NULL){
+static.sr.plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.params=FALSE,resids=FALSE,hpd=NULL){
   if(is.null(title)==T){title=''}
   if(resids==TRUE){
     par(mfrow=c(2,1));fig.pars=c(6,8)
@@ -67,7 +67,7 @@ static.sr.plot(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.params=FALS
   
 }
 
-sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb'),sr_only=FALSE){
+sr_plot_old=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb'),sr_only=FALSE){
   if(type=='static'){ #static====
     x_new=seq(0,max(df$S),length.out=200)
 
