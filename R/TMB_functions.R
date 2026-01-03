@@ -1086,13 +1086,13 @@ ricker_hmm_TMB2 <- function(data,
   BIC  <- 2*nll + npar*log(nrow(data))
 
   structure(list(
-    logalpha    = tmb_obj$report()$logalpha,
-    beta     = tmb_obj$report()$beta,
+    logalpha    = if(tv.par == "b"){tmb_obj$report()$logalpha[1]}else{tmb_obj$report()$logalpha},
+    beta     = if(tv.par == "a"){tmb_obj$report()$beta[1]}else{tmb_obj$report()$beta},
     sigma      = tmb_obj$report()$sigma,
     qij      = tmb_obj$report()$qij,
     Smsy      = tmb_obj$report()$Smsy,
-    Smax      = tmb_obj$report()$Smax,
-    umsy      = tmb_obj$report()$umsy,
+    Smax      = if(tv.par == "a"){tmb_obj$report()$Smax[1]}else{tmb_obj$report()$Smax},
+    umsy      = if(tv.par == "b"){tmb_obj$report()$umsy[1]}else{tmb_obj$report()$umsy},
     probregime =  tmb_obj$report()$r_pred,
     regime =  apply(tmb_obj$report()$r_pred, 2,which.max),
     AICc       = AICc,

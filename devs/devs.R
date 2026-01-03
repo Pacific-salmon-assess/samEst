@@ -150,7 +150,9 @@ phmmb2$logalpha
 
 
 phmmb$beta
-phmmb2$beta  
+phmmb2$beta
+
+beta  
 
 phmmb$sigma    
 phmmb2$sigma     
