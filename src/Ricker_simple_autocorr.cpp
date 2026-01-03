@@ -67,8 +67,8 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(stan_flag); //flag indicating wether or not to use TMBstan and do the Jacobian adjustment
 
   DATA_SCALAR(sig_p_sd); //sd for sigma prior
-  DATA_SCALAR(logb_p_sd); //sd for logb prior
-  DATA_SCALAR(logb_p_mean); //mean for logb prior
+  DATA_SCALAR(logsmax_p_sd); //sd for logb prior
+  DATA_SCALAR(logsmax_p_mean); //mean for logb prior
 
   //lfo quantities
   DATA_SCALAR(y_oos); //log(recruits per spawner) next year
@@ -76,7 +76,7 @@ Type objective_function<Type>::operator() ()
 
 
   PARAMETER(logalpha);
-  PARAMETER(logbeta);
+  PARAMETER(logSmax);
   PARAMETER(logsigma);
   PARAMETER(rho);
   
@@ -85,11 +85,10 @@ Type objective_function<Type>::operator() ()
 
   Type rhoo = minus_one_to_one(rho);
 
-  
-  Type beta = exp(logbeta);
+ 
   Type sigma_noar = exp(logsigma);
-  Type Smax  = Type(1.0)/beta;
-  
+  Type Smax  = exp(logSmax);   
+  Type beta = Type(1.0)/Smax;
 
   Type sigma  = sigma_noar*sqrt(1-pow(rhoo,2));
 
@@ -103,7 +102,7 @@ Type objective_function<Type>::operator() ()
     
     pnll -=dnorm(logalpha,Type(1.5),Type(2.5),true);
     
-    pnll -= dnorm(logbeta,logb_p_mean,logb_p_sd,true);
+    pnll -= dnorm(logSmax,logsmax_p_mean,logsmax_p_sd,true);
     
     pnll -= dnorm(sigma_noar,Type(0.0),sig_p_sd,true) - log(pnorm(Type(0.0), Type(0.0),sig_p_sd));
     if(stan_flag) pnll -= logsigma;

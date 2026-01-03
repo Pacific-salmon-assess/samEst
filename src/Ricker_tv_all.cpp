@@ -84,12 +84,14 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(sigb_p_sd); //sd for sigb prior
 
 
-  DATA_SCALAR(logb_p_mean); //mean for logb prior
-  DATA_SCALAR(logb_p_sd); //sd for logb prior
+  //DATA_SCALAR(logb_p_mean); //mean for logb prior
+  //DATA_SCALAR(logb_p_sd); //sd for logb prior
+  DATA_SCALAR(logsmax_p_sd); //sd for logsmax prior
+  DATA_SCALAR(logsmax_p_mean); //mean for logsmax prior
 
   //fixed parameters
   PARAMETER(logalpha); //initial alpha value
-  PARAMETER(logbeta); //log of beta from ricker curve
+  PARAMETER(logSmax); //log Smax from ricker curve
   PARAMETER(logsigobs);
   PARAMETER(logsiga);
   PARAMETER(logsigb);
@@ -97,12 +99,10 @@ Type objective_function<Type>::operator() ()
   //random effects
  
   PARAMETER_VECTOR(epslogalpha_t);
-  PARAMETER_VECTOR(epslogbeta_t);
+  PARAMETER_VECTOR(epslogsmax_t);
     
   int timeSteps=obs_logRS.size();
 
-  
-  
  
   Type sigobs = exp(logsigobs);
   Type siga = exp(logsiga);
@@ -123,7 +123,7 @@ Type objective_function<Type>::operator() ()
   if(priors_flag == 1){
     
     pnll -=dnorm(logalpha,Type(1.5),Type(2.5),true);
-    pnll -= dnorm(logbeta,logb_p_mean,logb_p_sd,true);
+    pnll -= dnorm(logSmax,logsmax_p_mean,logsmax_p_sd,true);
        
     pnll  -= dnorm(sigobs,Type(0.0),sig_p_sd,true) - log(pnorm(Type(0.0), Type(0.0),sig_p_sd));
     if(stan_flag){
@@ -149,8 +149,8 @@ Type objective_function<Type>::operator() ()
       if(t>=1) renll -= dnorm( epslogalpha_t(t), epslogalpha_t(t-1), siga, true );
     }
     if( options_z(1)==1 ){
-      if(t==0) renll -= dnorm( epslogbeta_t(t), Type(0.0), sigb, true );
-      if(t>=1) renll -= dnorm( epslogbeta_t(t), epslogbeta_t(t-1), sigb, true );
+      if(t==0) renll -= dnorm( epslogsmax_t(t), Type(0.0), sigb, true );
+      if(t>=1) renll -= dnorm( epslogsmax_t(t), epslogsmax_t(t-1), sigb, true );
     }
   }
 
@@ -159,8 +159,8 @@ Type objective_function<Type>::operator() ()
   for(int i=0;i<timeSteps;i++){
     if(!isNA(obs_logRS(i))){
       logalpha_t(i) = logalpha + epslogalpha_t(i);
-      beta_t(i) = exp(logbeta+epslogbeta_t(i));
-      Smax_t(i) = Type(1.0)/beta_t(i);
+      Smax_t(i) = exp(logSmax+epslogsmax_t(i));
+      beta_t(i) = Type(1.0)/Smax_t(i);
       pred_logRS(i) = logalpha_t(i) - beta_t(i) * obs_S(i) ;
       pred_logR(i) = pred_logRS(i) + log(obs_S(i));
       
@@ -174,13 +174,14 @@ Type objective_function<Type>::operator() ()
       nll+=-ll(i);
     }
   }
-  Type beta = exp(logbeta);
-  Type Smax = Type(1.0)/beta;
+  
+  Type Smax = exp(logSmax);
+  Type beta = Type(1.0)/Smax;
 
   Type ans= nll + renll + pnll;
 
   REPORT(logalpha)
-  REPORT(logbeta)
+  REPORT(logSmax)
   REPORT(beta)
   REPORT(Smax)
   REPORT(logalpha_t)
@@ -198,7 +199,9 @@ Type objective_function<Type>::operator() ()
   REPORT(nll);
   REPORT(ll);
   REPORT(renll);
-  REPORT(pnll);  
+  REPORT(pnll); 
+  REPORT(epslogsmax_t); 
+  REPORT(epslogalpha_t);
    
   return ans;
 }

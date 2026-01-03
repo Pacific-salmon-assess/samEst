@@ -153,8 +153,8 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(st);
   DATA_SCALAR(logalpha_u); //upper bound for a
   DATA_SCALAR(logalpha_l); //lower bound for a
-  DATA_SCALAR(Smax_u);  //upper bound for b
-  DATA_SCALAR(Smax_l);  //upper bound for b
+  DATA_SCALAR(beta_u);  //upper bound for b
+  DATA_SCALAR(beta_l);  //upper bound for b
   DATA_INTEGER(options_flag); //flag indicating which model to be fit regime both (0), regime a (1), regime b (2)
 
 
@@ -167,48 +167,44 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(stan_flag); //flag indicating wether or not tmbstan is used 
   DATA_SCALAR(sig_p_sd); //sd for sigma prior
 
-  //DATA_SCALAR(logb_p_mean); //mean for logb prior
-  //DATA_SCALAR(logb_p_sd); //sd for logb prior
-  DATA_SCALAR(logsmax_p_sd); //sd for logsmax prior
-  DATA_SCALAR(logsmax_p_mean); //mean for logsmax prior
+  DATA_SCALAR(logb_p_mean); //mean for logb prior
+  DATA_SCALAR(logb_p_sd); //sd for logb prior
+  //DATA_SCALAR(logsmax_p_sd); //sd for logsmax prior
+  //DATA_SCALAR(logsmax_p_mean); //mean for logsmax prior
 
   //vector forms
   PARAMETER_VECTOR(vec_logitalpha);
-  PARAMETER_VECTOR(vec_logitSmax);
+  PARAMETER_VECTOR(vec_logitbeta);
   
   //vector forms
   PARAMETER(logsigma);
   PARAMETER(scalar_logitalpha);
-  PARAMETER(scalar_logitSmax);
+  PARAMETER(scalar_logitbeta);
   
   PARAMETER_MATRIX(qij_tran); // transition probabilities
   int k_regime = vec_logitalpha.size();
   //define parameters to be used in the model according to options
-  vector<Type> logalpha(k_regime) ,Smax(k_regime), beta(k_regime);
+  vector<Type> logalpha(k_regime) , beta(k_regime);
 
   if(options_flag==0){//regime in both logalpha and beta
 
    logalpha(0) = (logalpha_u-logalpha_l)/(1+exp(-vec_logitalpha(0)))+logalpha_l;
-   Smax(0)= (Smax_u-Smax_l)/(1+exp(-vec_logitSmax(0)))+Smax_l;
-   beta(0)= Type(1.0)/Smax(0);
+   beta(0)= (beta_u-beta_l)/(1+exp(-vec_logitbeta(0)))+beta_l;
    
    for(int i = 1;i < k_regime;++i){
      logalpha(i) = logalpha(i-1) + (logalpha_u-logalpha(i-1))/(1+exp(-vec_logitalpha(i)));
-     Smax(i)= (Smax_u-Smax_l)/(1+exp(-vec_logitSmax(i)))+Smax_l;
-      beta(i)= Type(1.0)/Smax(i);
+     beta(i)= (beta_u-beta_l)/(1+exp(-vec_logitbeta(i)))+beta_l;
    }
    
   }
   if(options_flag==1){//regime in logalpha only
     
     logalpha(0) = (logalpha_u-logalpha_l)/(1+exp(-vec_logitalpha(0)))+logalpha_l;
-    Smax(0)= (Smax_u-Smax_l)/(1+exp(-scalar_logitSmax))+Smax_l;
-    beta(0)= Type(1.0)/Smax(0);
+    beta(0)= (beta_u-beta_l)/(1+exp(-scalar_logitbeta))+beta_l;
 
     for(int i = 1;i < k_regime;++i){
       logalpha(i) = logalpha(i-1) + (logalpha_u-logalpha(i-1))/(1+exp(-vec_logitalpha(i)));
-      Smax(i)= (Smax_u-Smax_l)/(1+exp(-scalar_logitSmax))+Smax_l;
-      beta(i)= Type(1.0)/Smax(i);
+      beta(i)= (beta_u-beta_l)/(1+exp(-scalar_logitbeta))+beta_l;
 
     } // logalpha(1) from logalpha(0) to logalpha_u
 
@@ -217,19 +213,21 @@ Type objective_function<Type>::operator() ()
   if(options_flag==2){ //regime in beta only
 
     logalpha(0) = (logalpha_u-logalpha_l)/(1+exp(-scalar_logitalpha))+logalpha_l;
-    Smax(0)= (Smax_u-Smax_l)/(1+exp(-vec_logitSmax(0)))+Smax_l;
-    beta(0)= Type(1.0)/Smax(0);
+    beta(0)= (beta_u-beta_l)/(1+exp(-vec_logitbeta(0)))+beta_l;
+
 
     for(int i = 1;i < k_regime;++i){
       logalpha(i) = (logalpha_u-logalpha_l)/(1+exp(-scalar_logitalpha))+logalpha_l;
-      Smax(i)= Smax(i-1) +(Smax_u-Smax(i-1))/(1+exp(-vec_logitSmax(i)));
-      beta(i)= Type(1.0)/Smax(i);
+      beta(i)= beta(i-1) +(beta_u-beta(i-1))/(1+exp(-vec_logitbeta(i)));
+
     }
     
   } 
 
+ 
   
-  vector<Type>  Smsy(k_regime), umsy(k_regime);
+  vector<Type>  Smsy(k_regime), umsy(k_regime), Smax(k_regime);
+
 
   
   Type sigma = exp(logsigma);
@@ -303,22 +301,22 @@ Type objective_function<Type>::operator() ()
         
         pnll -=dnorm(logalpha(j),Type(1.5),Type(2.5),true);
      
-        Type logSmax = log(Smax(j));
-        pnll -= dnorm(logSmax,logsmax_p_mean, logsmax_p_sd,true);
+        Type logbeta = log(beta(j));
+        pnll -= dnorm(logbeta,logb_p_mean,logb_p_sd,true);
     
       }
       if(options_flag==1){//regime in logalpha only
         
         pnll -=dnorm(logalpha(j),Type(1.5),Type(2.5),true);
         if(j==0){
-          Type logSmax = log(Smax(j));
-          pnll -= dnorm(logSmax,logsmax_p_mean, logsmax_p_sd,true);
+          Type logbeta = log(beta(j));
+          pnll -= dnorm(logbeta,logb_p_mean,logb_p_sd,true);
         }
     
       }
       if(options_flag==2){//regime in beta only
-        Type logSmax = log(Smax(j));
-        pnll -= dnorm(logSmax,logsmax_p_mean, logsmax_p_sd,true);
+        Type logbeta = log(beta(j));
+        pnll -= dnorm(logbeta,logb_p_mean,logb_p_sd,true);
        
         if(j==0){
           pnll -=dnorm(logalpha(j),Type(1.5),Type(2.5),true);

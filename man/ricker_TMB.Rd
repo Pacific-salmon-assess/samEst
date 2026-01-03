@@ -13,8 +13,8 @@ ricker_TMB(
   priors_flag = 1,
   stan_flag = 0,
   sig_p_sd = 1,
-  logb_p_mean = -12,
-  logb_p_sd = 3,
+  Smax_mean = 230000,
+  Smax_sd = 230000,
   rtmb_v = 0
 )
 }
@@ -38,11 +38,11 @@ adjustment implemented. Default is 0, jacobian adjustment not included.}
 
 \item{sig_p_sd}{sd for half normal prior on sigma parameter. default is 1.}
 
+\item{rtmb_v}{use RTMB version?}
+
 \item{logb_p_mean}{mean for prior on log b, default is -12.}
 
 \item{logb_p_sd}{sd for prior on log b, default is 3.}
-
-\item{rtmb_v}{use RTMB version?}
 }
 \value{
 a list containing several model outputs:

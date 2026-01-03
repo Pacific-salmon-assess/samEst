@@ -16,8 +16,8 @@ ricker_rw_TMB(
   sig_p_sd = 1,
   siga_p_sd = 1,
   sigb_p_sd = 0.3,
-  logb_p_mean = -12,
-  logb_p_sd = 3,
+  Smax_mean = 230000,
+  Smax_sd = 230000,
   AICc_type = c("conditional", "marginal")[1],
   deltaEDF = 1e-04,
   newton_stp = TRUE,
@@ -50,10 +50,6 @@ adjustment implemented. Default is 0, jacobian adjustment not included.}
 
 \item{sigb_p_sd}{sd for half normal prior on sigma for beta random walk parameter. default is 1.}
 
-\item{logb_p_mean}{mean for prior on log b, default is -12.}
-
-\item{logb_p_sd}{sd for prior on log b, default is 3.}
-
 \item{AICc_type}{"conditional" or "marginal"}
 
 \item{deltaEDF}{size of delta step used to calculate Thorson 2024 EDF}
@@ -61,6 +57,10 @@ adjustment implemented. Default is 0, jacobian adjustment not included.}
 \item{newton_stp}{logical. use newton step to improve estimates and gradients}
 
 \item{useEDF}{logical use EDf algorithm describef in Thorson 2024}
+
+\item{logb_p_mean}{mean for prior on log b, default is -12.}
+
+\item{logb_p_sd}{sd for prior on log b, default is 3.}
 }
 \value{
 a list containing several model outputs:

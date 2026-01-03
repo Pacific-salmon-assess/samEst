@@ -5,9 +5,10 @@
 #============================================
 
 
-
+rm(log_prior_params)
 
 devtools::document()
+
 devtools::load_all()
 
 
@@ -19,8 +20,13 @@ usethis::use_logo("man/figures/samEst_large.png")
 
 #combine simple and AR
 
-p <- ricker_TMB(data=harck)
-p2 <- ricker_TMB2(data=harck)
+p <- ricker_TMB_deprecated(data=harck, priors_flag=1)
+p2 <- ricker_TMB(data=harck,Smax_mean=220000,Smax_sd=230000, priors_flag=1)
+
+
+p$Smax
+p2$Smax
+
 
 p$logalpha   
 p2$logalpha
@@ -28,8 +34,7 @@ p2$logalpha
 p$beta
 p2$beta
 
-p$Smax
-p2$Smax
+
     
 p$sig      
 p2$sigma     
@@ -75,15 +80,62 @@ pac$rho
 pac2$rho
 
 
+
+
+ptva <- ricker_rw_TMB(data=harck,tv.par="a", Smax_mean=250000,Smax_sd=200000)
+
+ptva2 <- ricker_rw_TMB_logb(data=harck,tv.par="a")
+
+ptva$logalpha
+ptva2$logalpha
+
+ptva$Smax
+ptva2$Smax
+
+
+
+ptvb <- ricker_rw_TMB(data=harck,tv.par="b",sig_p_sd=1)
+ptvb2 <- ricker_rw_TMB_logb(data=harck,tv.par="b",sig_p_sd=1)
+
+ptvb$logalpha
+ptvb2$logalpha
+
+ptvb$Smax
+ptvb2$Smax
+
+
+ptvab <- ricker_rw_TMB(data=harck,tv.par="both")
+ptvab2 <- ricker_rw_TMB_logb(data=harck,tv.par="both")
+
+ptvab$logalpha
+ptvab2$logalpha
+
+ptvab$Smax
+ptvab2$Smax
+
+ptvab$tmb_obj$report()
+
+
+################################################
+#hmmm
+
+
 phmm <- ricker_hmm_TMB(data=harck, tv.par='both')
+phmm_logb <- ricker_hmm_TMB2_logb(data=harck, tv.par='both')
 phmm2 <- ricker_hmm_TMB2(data=harck, tv.par='both')
 
 
 phmm$logalpha
 phmm2$logalpha
+phmm_logb$logalpha
 
 phmm$beta
-phmm2$beta  
+phmm2$beta
+phmm_logb$beta  
+
+phmm$Smax
+phmm2$Smax 
+phmm_logb$Smax   
 
 phmm$sigma    
 phmm2$sigma     
@@ -106,17 +158,23 @@ phmm$regime
 phmm2$regime
 
 
-#nned to change the priors
-
 phmma <- ricker_hmm_TMB(data=harck, tv.par='a')
 phmma2 <- ricker_hmm_TMB2(data=harck, tv.par='a')
+phmma_logb <- ricker_hmm_TMB2_logb(data=harck, tv.par='a')
 
 phmma$logalpha
 phmma2$logalpha
+$logalpha
+
+
 
 phmma$beta
 phmma2$beta  
-
+phmma_logb$beta
+ 
+phmma$Smax
+phmma2$Smax      
+phmma_logb$Smax    
 
 phmma$sigma    
 phmma2$sigma     
@@ -139,7 +197,8 @@ phmma2$regime
 
 
 phmmb <- ricker_hmm_TMB(data=harck, tv.par='b',priors_flag =1)
-phmmb2 <- ricker_hmm_TMB2(data=harck, tv.par='b',priors_flag = 1)
+phmmb2 <- ricker_hmm_TMB2(data=harck, tv.par='b',priors_flag = 1,Smax_limits=c(100,10000000))
+phmmb_logb <- ricker_hmm_TMB2_logb(data=harck, tv.par='b',priors_flag =1)
 
 phmmb$conv_problem
 phmmb2$conv_problem
@@ -147,12 +206,16 @@ phmmb2$conv_problem
 
 phmmb$logalpha
 phmmb2$logalpha
-
+phmmb_logb$logalpha
 
 phmmb$beta
 phmmb2$beta
+phmmb_logb$beta
 
-beta  
+
+phmmb$Smax
+phmmb2$Smax      
+phmmb_logb$Smax 
 
 phmmb$sigma    
 phmmb2$sigma     
@@ -162,8 +225,7 @@ phmmb$qij  -phmmb2$qij
 phmmb$Smsy  
 phmmb2$Smsy    
 
-phmmb$Smax
-phmmb2$Smax      
+
 
 phmmb$umsy     
 phmmb2$umsy

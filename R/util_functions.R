@@ -93,5 +93,32 @@ minus_one_to_one <- function(x) {
 
 
 
+
+#' function to generate lognormal prior parameters based on mean and standard deviation in normal 
+#' space. Based on Quan and Zhang (2003) Estimate of standard deviation for a log-transformed 
+#' variable using arithmetic means and standard deviations. Statist. Med. 22:2723–2736
+#' 
+#' @param Smax_mean 
+#' @param Smax_sd
+#'
+#' @export
+#' 
+#' @returns list of mean and sd for lognormal prior on beta 
+#' 
+#' 
+log_prior_params <- function(Smax_mean,Smax_sd) {
+  
+  logsmax_pr_sig = sqrt(log(1+(Smax_sd^2)/(Smax_mean^2)))
+  logsmax_pr = log(Smax_mean)-0.5*logsmax_pr_sig^2
+
+  return(list(logsmax_pr_mean=logsmax_pr,
+             logsmax_pr_sig=logsmax_pr_sig))
+}
+
+
+
+
+
+
 # END
 #***********************************************************************************
