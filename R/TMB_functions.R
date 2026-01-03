@@ -981,8 +981,7 @@ ricker_hmm_TMB2 <- function(data,
                            sig_p_sd=1,
                            dirichlet_prior=NULL,
                            logb_p_mean=-12,
-                           logb_p_sd=3,
-                           optimiz=TRUE) {
+                           logb_p_sd=3) {
 
   #===================================
   #prepare TMB input and options
@@ -1068,16 +1067,11 @@ ricker_hmm_TMB2 <- function(data,
       data = tmb_data, parameters = tmb_params, map = tmb_map,
       DLL = "SR_HMM_all", silent = silent)
 
-  if(optimiz){
+  
      tmb_opt <- stats::nlminb(
     start = tmb_obj$par, objective = tmb_obj$fn, gradient = tmb_obj$gr,
     control = control)
-    sd_report <- TMB::sdreport(tmb_obj)
-    conv <- get_convergence_diagnostics(sd_report)
-  }else{
-    sd_report <- NA
-    conv <- NA
-  }
+    
  
     
   sd_report <- TMB::sdreport(tmb_obj)
@@ -1103,7 +1097,7 @@ ricker_hmm_TMB2 <- function(data,
     regime =  apply(tmb_obj$report()$r_pred, 2,which.max),
     AICc       = AICc,
     BIC        = BIC,
-    model      = ifelse(optimiz,tmb_opt,NA),
+    model      = tmb_opt,
     data       = data,
     tmb_data   = tmb_data,
     tmb_params = tmb_params,
@@ -1197,8 +1191,7 @@ ricker_hmm_TMB <- function(data,
                            sig_p_sd=1,
                            dirichlet_prior=NULL,
                            logb_p_mean=-12,
-                           logb_p_sd=3,
-                           optimiz=TRUE) {
+                           logb_p_sd=3) {
 
   #===================================
   #prepare TMB input and options
@@ -1304,16 +1297,12 @@ ricker_hmm_TMB <- function(data,
   }
 
 
-  if(optimiz){
+  
     tmb_opt <- stats::nlminb(
     start = tmb_obj$par, objective = tmb_obj$fn, gradient = tmb_obj$gr,
     control = control)
-    sd_report <- TMB::sdreport(tmb_obj)
-    conv <- get_convergence_diagnostics(sd_report)
-  }else{
-    sd_report <- NA
-    conv <- NA
-  }
+  
+  
   
     
   sd_report <- TMB::sdreport(tmb_obj)
@@ -1338,7 +1327,7 @@ ricker_hmm_TMB <- function(data,
     regime =  apply(tmb_obj$report()$r_pred, 2,which.max),
     AICc       = AICc,
     BIC        = BIC,
-    model      = ifelse(optimiz,tmb_opt,NA),
+    model      = tmb_opt,
     data       = data,
     tmb_data   = tmb_data,
     tmb_params = tmb_params,

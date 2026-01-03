@@ -20,8 +20,7 @@ ricker_hmm_TMB2(
   sig_p_sd = 1,
   dirichlet_prior = NULL,
   logb_p_mean = -12,
-  logb_p_sd = 3,
-  optimiz = TRUE
+  logb_p_sd = 3
 )
 }
 \arguments{

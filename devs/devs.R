@@ -138,8 +138,8 @@ phmma$regime
 phmma2$regime
 
 
-phmmb <- ricker_hmm_TMB(data=harck, tv.par='b',priors_flag =1, optimiz=TRUE)
-phmmb2 <- ricker_hmm_TMB2(data=harck, tv.par='b',priors_flag = 1, optimiz=TRUE)
+phmmb <- ricker_hmm_TMB(data=harck, tv.par='b',priors_flag =1)
+phmmb2 <- ricker_hmm_TMB2(data=harck, tv.par='b',priors_flag = 1)
 
 phmmb$conv_problem
 phmmb2$conv_problem
