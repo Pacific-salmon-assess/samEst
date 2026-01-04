@@ -1,4 +1,4 @@
-all: Ricker_tv_all_deprecated.so Ricker_simple_autocorr.so SR_HMM.so SR_HMM_a.so SR_HMM_b.so  Ricker_tv_all.so SR_HMM_all.so SR_HMM_all_logb.so Ricker_autocorr_deprecated.so
+all: Ricker_tv_all_deprecated.so Ricker_simple_autocorr.so SR_HMM.so SR_HMM_a.so SR_HMM_b.so  Ricker_tv_all.so SR_HMM_all.so SR_HMM_all_logb.so Ricker_autocorr_deprecated.so Ricker_simple_deprecated.so
 
 
 
