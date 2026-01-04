@@ -1669,11 +1669,11 @@ ricker_hmm_TMB2 <- function(data,
 #'   \insertRef{tangIdentificationRecruitmentRegime2021}{samEst}
 #' }
 #' 
-#' @export
+#' 
 #' @examples 
 #' data(harck)
 #' ricker_HMM_TMB(data=harck)
-ricker_hmm_TMB <- function(data, 
+ricker_hmm_TMB_deprecated <- function(data, 
                            tv.par = c('a','b','both'), 
                            k_regime = 2, 
                            logalpha_limits = c(0.01,20), 
@@ -2004,13 +2004,10 @@ get_convergence_diagnostics <- function(sd_report) {
 #'
 #' 
 #' @useDynLib Ricker_simple_autocorr
-#' @useDynLib SR_HMM
 #' @useDynLib Ricker_tv_all
 #' @useDynLib Ricker_tv_all_deprecated
-#' @useDynLib SR_HMM_a
 #' @useDynLib SR_HMM_all
 #' @useDynLib SR_HMM_all_logb
-#' @useDynLib SR_HMM_b
 #' @useDynLib Rickerkf
 #' @useDynLib Ricker_autocorr_deprecated
 #' @useDynLib Ricker_simple_deprecated

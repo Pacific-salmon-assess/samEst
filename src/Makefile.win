@@ -1,4 +1,4 @@
-all: Ricker_autocorr_deprecated.dll Ricker_tv_all_deprecated.dll Ricker_simple_deprecated.dll Ricker_simple_autocorr.dll SR_HMM_all.dll  SR_HMM.dll SR_HMM_a.dll SR_HMM_b.dll  Rickerkf.dll Ricker_tv_all.dll SR_HMM_all_logb.dll
+all: Ricker_autocorr_deprecated.dll Ricker_tv_all_deprecated.dll Ricker_simple_deprecated.dll Ricker_simple_autocorr.dll SR_HMM_all.dll   Rickerkf.dll Ricker_tv_all.dll SR_HMM_all_logb.dll
 
 Ricker_simple_deprecated.dll: Ricker_simple_deprecated.cpp
 	Rscript --vanilla -e "TMB::compile('Ricker_simple_deprecated.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
@@ -21,14 +21,6 @@ SR_HMM_all.dll: SR_HMM_all.cpp
 SR_HMM_all_logb.dll: SR_HMM_all_logb.cpp
 	Rscript --vanilla -e "TMB::compile('SR_HMM_all_logb.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
 
-SR_HMM.dll: SR_HMM.cpp
-	Rscript --vanilla -e "TMB::compile('SR_HMM.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
-
-SR_HMM_a.dll: SR_HMM_a.cpp
-	Rscript --vanilla -e "TMB::compile('SR_HMM_a.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
-
-SR_HMM_b.dll: SR_HMM_b.cpp
-	Rscript --vanilla -e "TMB::compile('SR_HMM_b.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
 
 Rickerkf.dll: Rickerkf.cpp
 	Rscript --vanilla -e "TMB::compile('Rickerkf.cpp', '-O1 -g',DLLFLAGS='', framework = 'TMBad')"
