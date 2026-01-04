@@ -60,15 +60,15 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
         Smax_mean<-(max(df_past$S)*.5)
         Smax_sd<-Smax_mean
  
-        logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
-        logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
+        #logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
+        #logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
  
       }
       
       
       fit_past_tmb <-tryCatch({ricker_TMB(data=df_past,silent = TRUE,
                                 priors_flag=priors_flag,sig_p_sd=sig_p_sd,
-                                logb_p_mean=logb_p_mean,logb_p_sd=logb_p_sd)},
+                                Smax_mean=Smax_mean,Smax_sd=Smax_sd)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(fail_conv=1,
@@ -101,8 +101,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
         Smax_mean<-(max(df_past$S)*.5)
         Smax_sd<-Smax_mean
  
-        logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
-        logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
+        #logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
+        #logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
  
       }
       
@@ -110,7 +110,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       #fit_past_tmb<- ricker_TMB(data=df_past,AC=TRUE)
       fit_past_tmb <- tryCatch({ricker_TMB(data=df_past, AC=TRUE,silent = TRUE,
                                 priors_flag=priors_flag,sig_p_sd=sig_p_sd,
-                                logb_p_mean=logb_p_mean,logb_p_sd=logb_p_sd)},
+                                Smax_mean=Smax_mean,Smax_sd=Smax_sd)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(fail_conv=1,
@@ -146,15 +146,15 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
         Smax_mean<-(max(df_past$S)*.5)
         Smax_sd<-Smax_mean
  
-        logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
-        logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
+        #logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
+        #logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
  
       }
       
       
       fit_past_tv_a_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='a',silent = TRUE,
                                 priors_flag=priors_flag,sig_p_sd=sig_p_sd,
-                                logb_p_mean=logb_p_mean,logb_p_sd=logb_p_sd)},
+                                Smax_mean=Smax_mean,Smax_sd=Smax_sd)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(fail_conv=1,
@@ -211,14 +211,14 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
         Smax_mean<-(max(df_past$S)*.5)
         Smax_sd<-Smax_mean
  
-        logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
-        logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
+        #logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
+        #logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
  
       }
       
       fit_past_tv_b_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='b',silent = TRUE,
                                 priors_flag=priors_flag,sig_p_sd=sig_p_sd,
-                                logb_p_mean=logb_p_mean,logb_p_sd=logb_p_sd)},
+                                Smax_mean=Smax_mean,Smax_sd=Smax_sd)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(fail_conv=1,
@@ -278,15 +278,15 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
         Smax_mean<-(max(df_past$S)*.5)
         Smax_sd<-Smax_mean
  
-        logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
-        logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
+        #logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
+        #logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
  
       }
        
      
       fit_past_tv_ab_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='both',silent = TRUE,
                                 priors_flag=priors_flag,sig_p_sd=sig_p_sd,
-                                logb_p_mean=logb_p_mean,logb_p_sd=logb_p_sd)},
+                                Smax_mean=Smax_mean,Smax_sd=Smax_sd)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(fail_conv=1,
