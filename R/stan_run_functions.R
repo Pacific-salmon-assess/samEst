@@ -37,7 +37,7 @@
 #' data(harck)
 #' ricker_stan(data=harck)
 #' 
-ricker_stan <- function(data,  AC=FALSE, smax_priors=NULL,mod=NULL, control = stancontrol(adapt_delta=0.99), warmup=300, chains = 6, iter = 1000,...) {
+ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL, control = stancontrol(adapt_delta=0.99), warmup=300, chains = 6, iter = 1000,...) {
 
     if(is.null(mod)==T){
     sm=sr_mod(type='static',ac=ac,par='n')
