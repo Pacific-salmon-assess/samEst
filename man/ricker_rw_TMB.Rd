@@ -52,7 +52,7 @@ adjustment implemented. Default is 0, jacobian adjustment not included.}
 
 \item{AICc_type}{"conditional" or "marginal"}
 
-\item{deltaEDF}{size of delta step used to calculate Thorson 2024 EDF}
+\item{deltaEDF}{size of delta step used to calculate Thorson 2024 EDF \insertCite{thorsonMeasuringComplexityHierarchical2024}{samEst}}
 
 \item{newton_stp}{logical. use newton step to improve estimates and gradients}
 
@@ -100,4 +100,9 @@ data(harck)
 ricker_rwa_TMB(data=harck)
 
 
+}
+\references{
+\insertAllCited{}
+
+@importFrom Rdpack reprompt
 }

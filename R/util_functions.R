@@ -84,6 +84,9 @@ sr_format<- function(S,R,by){
 #' 
 #' @returns inverse logit transformed variable 
 #' 
+#' @importFrom Rdpack reprompt
+#' 
+#' 
 #' 
 minus_one_to_one <- function(x) {
   return(2 * (exp(x)/(1+exp(x))) - 1)

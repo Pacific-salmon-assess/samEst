@@ -5,12 +5,12 @@
 #============================================
 
 
-rm(log_prior_params)
-
 devtools::document()
 
 devtools::load_all()
 
+?ricker_TMB
+?ricker_rw_TMB
 
 #render the vignette
 devtools::build_rmd("vignettes/samEst.Rmd")
@@ -225,8 +225,6 @@ phmmb$qij  -phmmb2$qij
 phmmb$Smsy  
 phmmb2$Smsy    
 
-
-
 phmmb$umsy     
 phmmb2$umsy
 
@@ -248,9 +246,9 @@ pac<-ricker_TMB(data=harck, AC=TRUE)
 ptva<- ricker_rw_TMB(data=harck,tv.par="a")
 ptvb <- ricker_rw_TMB(data=harck,tv.par="b",sig_p_sd=1)
 ptvab <- ricker_rw_TMB(data=harck,tv.par="both",sig_p_sd=.5)
-phmma <- ricker_hmm_TMB(data=harck, tv.par='a')
-phmmb <- ricker_hmm_TMB(data=harck, tv.par='b')
-phmm <- ricker_hmm_TMB(data=harck, tv.par='both')
+phmma <- ricker_hmm_TMB2(data=harck, tv.par='a')
+phmmb <- ricker_hmm_TMB2(data=harck, tv.par='b')
+phmm <- ricker_hmm_TMB2(data=harck, tv.par='both')
 
 
 names(p)
