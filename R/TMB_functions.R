@@ -211,8 +211,9 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' @export
 #' @examples 
 #' data(harck)
-#' ricker_rwa_TMB(data=harck)
-#' 
+#' ptva <- ricker_rw_TMB(data=harck,tv.par="a", Smax_mean=250000,Smax_sd=200000)
+#' ptvb <- ricker_rw_TMB(data=harck,tv.par="b",sig_p_sd=1)
+#' ptvab <- ricker_rw_TMB(data=harck,tv.par="both")
 #' 
 ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
   control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, 
