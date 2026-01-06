@@ -2,42 +2,39 @@
 #'
 #' This function generates a stock-recruitment (S-R) model for rstan based on model inputs.
 #' @param df stock-recruitment dataset. With columns R (recruits) and S (spawners) and by (brood year)
-#' @param form Either fit with Stan ('stan') or TMB ('tmb')
-#' @param mod a fitted Stan or TMB model
-#' @param pdf whether to create a pdf or not
+#' @param mod a fitted Stan or TMB static model
+#' @param make.pdf TRUE or FALSE, indicating whether to create a pdf or not
+#' @param plot.params TRUE or FALSE, indicating whether to plot Ricker parameter values onto the plot
+#' @param resids TRUE or FALSE, indicating whether to produce two plots with the spawner-recruit curve and the residuals of the fit over time
+#' @hpd value for 0.X (e.g. 0.95, 0.9, etc) credibility intervals - for Stan models only
 #' @return returns the compiled rstan code for a given S-R model
 #' @importFrom rstan stan_model
 #' @export
 #' @examples
 #' sr_plot(type='static',df=df,form='stan',df=df,mod=f1,pdf=FALSE)
 
-static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.params=FALSE,resids=FALSE,hpd=NULL){
+static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.params=FALSE,resids=FALSE){
   if(is.null(title)==T){title=''}
   if(resids==TRUE){
-    par(mfrow=c(2,1));fig.pars=c(6,8)
+    par(mfrow=c(2,1));fig.pars=c(fig.pars[1],2*fig.pars[2])
   }
   if(make.pdf==TRUE){
     pdf(paste(title,'_sr.pdf',sep=''),width=fig.pars[1],height=fig.pars[2])
   }
   plot(df$R~df$S,xlim=c(0,max(df$S)),ylim=c(0,max(df$R)),type='n',bty='l',xlab='Spawners',ylab='Recruits',main=title)
   abline(c(0,1),lty=5)
-  if(is.null(ric_ac$tmb_obj)==FALSE){
+  if(is.null(mod$tmb_obj)==FALSE){
     lines(x=rep(mod$Smax,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smax)*mod$Smax),col='darkred',lwd=2)
     lines(x=rep(mod$Smsy,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smsy)*mod$Smsy),col='navy',lwd=2)
     p_n=exp(mod$logalpha-mod$beta*x_n)*x_n
   }else{
     logalpha=median(mod$samples$logalpha)
     beta=median(mod$samples$beta)
-    if(is.null(hpd)==FALSE){
-     p=exp(mod$samples$logalpha-mod$samples$beta) 
-    }
     lines(x=rep(mod$Smax,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smax)*mod$Smax),col='darkred',lwd=2)
     lines(x=rep(mod$Smsy,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smsy)*mod$Smsy),col='navy',lwd=2)
   }
   
   x_n=seq(0,max(df$S))
-  
-
   
   lines(p_n~x_n,lwd=3,col=adjustcolor('black',alpha.f=0.8))
   col.p=viridis::viridis(length(d$by))
@@ -46,13 +43,13 @@ static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.pa
   text(x=df$S-max(df$S)*0.01,y=df$R+max(df$R)*0.03,df$by,cex=0.7)
   
   if(plot.params==TRUE){
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]*0.01,paste('log(a):',round(ric_ac$logalpha,2),sep=' '),adj=0)
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.1,x=par('usr')[2]*0.01,paste('Smax:',round(ric_ac$Smax),sep=' '),adj=0,col='darkred')
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.15,x=par('usr')[2]*0.01,paste('Smsy:',round(ric_ac$Smsy),sep=' '),adj=0,col='navy')
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.2,x=par('usr')[2]*0.01,paste('Umsy:',round(ric_ac$umsy,2),sep=' '),adj=0)
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.25,x=par('usr')[2]*0.01,paste('sigma:',round(ric_ac$sigar,2),sep=' '),adj=0)
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]*0.01,paste('log(a):',round(mod$logalpha,2),sep=' '),adj=0)
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.1,x=par('usr')[2]*0.01,paste('Smax:',round(mod$Smax),sep=' '),adj=0,col='darkred')
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.15,x=par('usr')[2]*0.01,paste('Smsy:',round(mod$Smsy),sep=' '),adj=0,col='navy')
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.2,x=par('usr')[2]*0.01,paste('Umsy:',round(mod$umsy,2),sep=' '),adj=0)
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.25,x=par('usr')[2]*0.01,paste('sigma:',round(mod$sigar,2),sep=' '),adj=0)
     if(is.na(mod$rho)==FALSE){
-      text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]*0.01,paste('rho:',round(ric_ac$rho,2),sep=' '),adj=0)
+      text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]*0.01,paste('rho:',round(mod$rho,2),sep=' '),adj=0)
     }
   }
   if(resids==TRUE){
@@ -66,6 +63,9 @@ static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.pa
   }
   
 }
+
+
+
 
 sr_plot_old=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb'),sr_only=FALSE){
   if(type=='static'){ #static====
