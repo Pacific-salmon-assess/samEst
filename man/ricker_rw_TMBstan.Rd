@@ -16,8 +16,8 @@ ricker_rw_TMBstan(
   sig_p_sd = 1,
   siga_p_sd = 1,
   sigb_p_sd = 1,
-  logb_p_mean = -12,
-  logb_p_sd = 3,
+  Smax_mean = 230000,
+  Smax_sd = 230000,
   chains = 6,
   iter = 10000,
   laplace = FALSE,
@@ -93,7 +93,7 @@ sigb ~ gamma(2,1/3)
 }
 \examples{
 data(harck)
-ricker_rwa_TMB(data=harck)
+ricker_ra_TMB(data=harck,tv.par='a')
 
 
 }

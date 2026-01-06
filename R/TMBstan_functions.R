@@ -47,7 +47,7 @@
 #' data(harck)
 #' rickerTMB(data=harck)
 #' 
-ricker_TMBstan <- function(data,  silent = FALSE, control = TMBcontrol(), 
+ricker_TMBstan <- function(data,  silent = FALSE, control = list(adapt_delta = 0.98), 
   tmb_map = list(), AC=FALSE, priors_flag=1, stan_flag=1,sig_p_sd=1,
   Smax_mean=230000,Smax_sd=230000,
   chains=6,iter=5000, warmup = floor(iter/2)) {
@@ -102,8 +102,7 @@ ricker_TMBstan <- function(data,  silent = FALSE, control = TMBcontrol(),
   tmb_mcmc <- tmbstan::tmbstan(tmb_obj, chains=chains,
               iter=iter, init="random",
               lower=lowlimit , upper=hightlimit,
-              control = list(adapt_delta = 0.98),
-              seed = 123,
+              control = control,
               warmup = warmup)
 
     mc <- extract(tmb_mcmc, pars=names(tmb_obj$par),
@@ -223,7 +222,7 @@ ricker_TMBstan <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' @export
 #' @examples 
 #' data(harck)
-#' ricker_rwa_TMB(data=harck)
+#' ricker_ra_TMB(data=harck,tv.par='a')
 #' 
 #' 
 ricker_rw_TMBstan <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
@@ -283,8 +282,8 @@ ricker_rw_TMBstan <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     npar <- 4
     npar_all <- 4+(length(data$S)-1)
 
-    lowlimit <- c(-20,0.01,log(0.01),log(0.01))
-    hightlimit <- c(-4,20,log(2),log(2))
+    lowlimit <- c(0.01,4,log(0.01),log(0.01))
+    hightlimit <- c(20,20,log(3),log(3))
 
   }else if(tv.par=="b"){
 
@@ -298,9 +297,8 @@ ricker_rw_TMBstan <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     npar <- 4
     npar_all <- 4+(length(data$S)-1)
 
-    lowlimit <- c(-20,0.01,log(0.01),log(0.01))
-    hightlimit <- c(-4,20,log(2),log(2))
-
+    lowlimit <- c(0.01,4,log(0.01),log(0.01))
+    hightlimit <- c(20,20,log(3),log(3))
 
   }else if(tv.par=="both"){
 
@@ -311,8 +309,9 @@ ricker_rw_TMBstan <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     npar <- 5
     npar_all <- 5+(length(data$S)-1)*2
 
-    lowlimit <- c(-20,0.01,log(0.0),log(0.01),log(0.01))
-    hightlimit <- c(-4,20,log(2),log(2),log(2))
+    lowlimit <- c(0.01,4,log(0.01),log(0.01),log(0.01))
+    hightlimit <- c(20,20,log(3),log(3),log(3))
+
     
 
   }else{
@@ -320,14 +319,13 @@ ricker_rw_TMBstan <- function(data, tv.par=c('a','b','both'), silent = FALSE,
   }
    
   
-   
-    clss <- "Ricker_tva_tvb"
-    npar <- 5
-    npar_all <- 5+(length(data$S)-1)*2
+  tmb_obj <- TMB::MakeADFun(data = tmb_data, 
+                              parameters = tmb_params, 
+                              map = tmb_map,
+                              random = tmb_random, 
+                              DLL = "Ricker_tv_all", 
+                              silent = silent)
 
-  }else{
-    stop(paste("tv.par",tv.par,"not recognized."))
-  }
  
 
   #===================================
@@ -338,9 +336,9 @@ ricker_rw_TMBstan <- function(data, tv.par=c('a','b','both'), silent = FALSE,
   tmb_mcmc <- tmbstan::tmbstan(tmb_obj, chains=chains,
               iter=iter, init="random",
               lower=lowlimit , upper=hightlimit,
-               control = control,
-               laplace=laplace,
-                warmup = warmup )
+              control = control,
+              laplace=laplace,
+              warmup = warmup )
 
    
   fit_summary <- summary(tmb_mcmc)

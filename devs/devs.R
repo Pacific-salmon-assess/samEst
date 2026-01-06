@@ -10,8 +10,15 @@ devtools::document()
 
 devtools::load_all()
 
-?ricker_TMB
-?ricker_rw_TMB
+
+
+p_tmbstan<-ricker_stan(data=harck)
+pac_tmbstan<-ricker_stan(data=harck, AC=TRUE)
+ptva_tmbstan<- ricker_rw_TMBstan(data=harck,tv.par="a")
+ptvb_tmbstan<- ricker_rw_TMBstan(data=harck,tv.par="b")
+ptvab_tmbstan<- ricker_rw_TMBstan(data=harck,tv.par="both")
+
+
 
 #render the vignette
 devtools::build_rmd("vignettes/samEst.Rmd")
@@ -23,6 +30,8 @@ usethis::use_logo("man/figures/samEst_large.png")
 
 p <- ricker_TMB_deprecated(data=harck, priors_flag=1)
 p2 <- ricker_TMB(data=harck,Smax_mean=220000,Smax_sd=230000, priors_flag=1)
+
+
 
 
 p$Smax

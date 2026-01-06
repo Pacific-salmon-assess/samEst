@@ -4,3 +4,5 @@
 dev\test_examples.r
 ^dev$
 ^test_examples\.r$
+
+.git
