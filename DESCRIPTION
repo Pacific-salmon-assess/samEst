@@ -41,7 +41,7 @@ Imports:
     Rdpack  (>= 0.7)
 RdMacros: Rdpack
 RoxygenNote: 7.3.3
-LazyData: false
+LazyData: true
 Suggests: 
     knitr,
     rmarkdown
