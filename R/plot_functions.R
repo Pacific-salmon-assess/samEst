@@ -6,7 +6,6 @@
 #' @param make.pdf TRUE or FALSE, indicating whether to create a pdf or not
 #' @param plot.params TRUE or FALSE, indicating whether to plot Ricker parameter values onto the plot
 #' @param resids TRUE or FALSE, indicating whether to produce two plots with the spawner-recruit curve and the residuals of the fit over time
-#' @param hpd value for 0.X (e.g. 0.95, 0.9, etc) credibility intervals - for Stan models only
 #' @return returns the compiled rstan code for a given S-R model
 #' @importFrom rstan stan_model
 #' @export
@@ -23,17 +22,9 @@ static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.pa
   }
   plot(df$R~df$S,xlim=c(0,max(df$S)),ylim=c(0,max(df$R)),type='n',bty='l',xlab='Spawners',ylab='Recruits',main=title)
   abline(c(0,1),lty=5)
-  if(is.null(mod$tmb_obj)==FALSE){
-    lines(x=rep(mod$Smax,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smax)*mod$Smax),col='darkred',lwd=2)
-    lines(x=rep(mod$Smsy,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smsy)*mod$Smsy),col='navy',lwd=2)
-    p_n=exp(mod$logalpha-mod$beta*x_n)*x_n
-  }else{
-    logalpha=median(mod$samples$logalpha)
-    beta=median(mod$samples$beta)
-    lines(x=rep(mod$Smax,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smax)*mod$Smax),col='darkred',lwd=2)
-    lines(x=rep(mod$Smsy,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smsy)*mod$Smsy),col='navy',lwd=2)
-  }
-  
+
+  lines(x=rep(mod$Smax,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smax)*mod$Smax),col='darkred',lwd=2)
+  lines(x=rep(mod$Smsy,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smsy)*mod$Smsy),col='navy',lwd=2)
   x_n=seq(0,max(df$S))
   
   lines(p_n~x_n,lwd=3,col=adjustcolor('black',alpha.f=0.8))
