@@ -67,7 +67,7 @@ static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.pa
 
 
 
-sr_plot_old=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb'),sr_only=FALSE){
+sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb'),sr_only=FALSE){
   if(type=='static'){ #static====
     x_new=seq(0,max(df$S),length.out=200)
 
