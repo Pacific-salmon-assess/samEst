@@ -1,7 +1,7 @@
 #' Simple Ricker model estimated with stan
 #'
 #' @param data A list or data frame containing complete vectors for: brood year (by), Spawners (s) and log(Recruits/Spawners) (logRS) time series.
-#' @param AC Logical. Are residuals autocorrelated? Default is FALSE
+#' @param ac Logical. Are residuals autocorrelated? Default is FALSE
 #' @param smax_priors User-specified smax priors, sampled from a normal distribution, should be formatted as: c(mean, sd). Defaults to mean = half maximum observed spawners, sd = max. observed spawners (from time series). 
 #' @param control output of stancontrol
 #' @param warmup To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
@@ -64,12 +64,12 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL, control = st
   fit<-rstan::sampling(sm, data=datm,
                       control = control, warmup = warmup, 
                       chains = chains, iter = iter,verbose=FALSE)
- if(AC==FALSE){ 
+ if(ac==FALSE){ 
   mc <- rstan::extract(fit,pars=c('logalpha','beta','Smax','Smsy','Umsy','sigma','mu','epsilon'),permuted=T) 
   mc2=as.data.frame(do.call(cbind,mc))
   colnames(mc2)=c('logalpha','beta','Smax','Smsy','Umsy','sigma',paste('mu[',seq(1:datm$N),']',sep=''),paste('epsilon[',seq(1:datm$N),']',sep=''))
   } 
-  if(AC==TRUE){ 
+  if(ac==TRUE){ 
   mc <- rstan::extract(fit,pars=c('logalpha','beta','Smax','Smsy','Umsy','sigma_AR','mu','epsilon','rho'),permuted=T)
   mc2=as.data.frame(do.call(cbind,mc))
   colnames(mc2)=c('logalpha','beta','Smax','Smsy','Umsy','sigma',paste('mu[',seq(1:datm$N),']',sep=''),paste('epsilon[',seq(1:datm$N),']',sep=''),'rho')
@@ -77,7 +77,7 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL, control = st
   
   aa <- rstan::summary(fit)
   if(full_posterior==FALSE){
-     if(AC==F){
+     if(ac==F){
        ans<-list(data=data,
                  logalpha=c(aa$summary["logalpha","50%"]),
                  beta=c(aa$summary["beta","50%"]),
@@ -91,7 +91,7 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL, control = st
                  full_posterior=mc2,
                  stanfit=fit)
      }
-    if(AC==TRUE){
+    if(ac==TRUE){
       ans<-list(data=data,
                 logalpha=c(aa$summary["logalpha","50%"]),
                 beta=c(aa$summary["beta","50%"]),
