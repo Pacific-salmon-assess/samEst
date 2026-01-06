@@ -115,7 +115,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
   conv <- get_convergence_diagnostics(sd_report)
 
   nll <- tmb_obj$report()$nll 
-  npar <- length(tmb_params)
+  npar <- length(tmb_params)-length(tmb_map)
  
   AICc  <- 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1))
   BIC  <- 2*nll + npar*log(nrow(data))

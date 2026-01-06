@@ -12,13 +12,16 @@ devtools::load_all()
 
 
 
-p_tmbstan<-ricker_stan(data=harck)
-pac_tmbstan<-ricker_stan(data=harck, AC=TRUE)
+
+p_tmbstan<-ricker_TMBstan(data=harck)
+pac_tmbstan<-ricker_TMBstan(data=harck, AC=TRUE)
 ptva_tmbstan<- ricker_rw_TMBstan(data=harck,tv.par="a")
 ptvb_tmbstan<- ricker_rw_TMBstan(data=harck,tv.par="b")
 ptvab_tmbstan<- ricker_rw_TMBstan(data=harck,tv.par="both")
 
-
+phmma_tmbstan<- ricker_rw_TMBstan(data=harck,tv.par="a")
+phmmb_tmbstan<- ricker_rw_TMBstan(data=harck,tv.par="b")
+phmmab_tmbstan<- ricker_rw_TMBstan(data=harck,tv.par="both")
 
 #render the vignette
 devtools::build_rmd("vignettes/samEst.Rmd")

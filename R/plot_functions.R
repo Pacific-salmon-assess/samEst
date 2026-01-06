@@ -6,7 +6,7 @@
 #' @param make.pdf TRUE or FALSE, indicating whether to create a pdf or not
 #' @param plot.params TRUE or FALSE, indicating whether to plot Ricker parameter values onto the plot
 #' @param resids TRUE or FALSE, indicating whether to produce two plots with the spawner-recruit curve and the residuals of the fit over time
-#' @hpd value for 0.X (e.g. 0.95, 0.9, etc) credibility intervals - for Stan models only
+#' @param hpd value for 0.X (e.g. 0.95, 0.9, etc) credibility intervals - for Stan models only
 #' @return returns the compiled rstan code for a given S-R model
 #' @importFrom rstan stan_model
 #' @export

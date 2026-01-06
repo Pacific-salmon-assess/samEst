@@ -8,7 +8,7 @@ ricker_rw_TMBstan(
   data,
   tv.par = c("a", "b", "both"),
   silent = FALSE,
-  control = list(adapt_delta = 0.98),
+  control = stancontrol(),
   ini_param = NULL,
   tmb_map = list(),
   priors_flag = 1,

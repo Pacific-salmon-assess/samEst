@@ -391,7 +391,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors
 #'
 #' @export
 stancontrol <- function(adapt_delta = 0.99,max_treedepth = 20,...) {
-  list(adapt_delta = 0.99,max_treedepth = 20,...)
+  list(adapt_delta = adapt_delta, max_treedepth = max_treedepth,...)
 }
 
 

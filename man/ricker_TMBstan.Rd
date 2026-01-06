@@ -7,7 +7,7 @@
 ricker_TMBstan(
   data,
   silent = FALSE,
-  control = list(adapt_delta = 0.98),
+  control = stancontrol(),
   tmb_map = list(),
   AC = FALSE,
   priors_flag = 1,

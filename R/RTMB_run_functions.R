@@ -31,7 +31,7 @@
 #' 
 #' @importFrom stats nlminb 
 #' 
-#' @export
+#' 
 #' 
 #' @examples
 #' data(harck)
@@ -164,7 +164,7 @@ ricker_RTMB2 <- function(data, silent = FALSE, control = TMBcontrol(),
 #' 
 #' @importFrom stats nlminb 
 #' 
-#' @export
+#'
 #' 
 #' @examples
 #' data(harck)

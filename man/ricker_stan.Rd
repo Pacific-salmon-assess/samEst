@@ -19,6 +19,8 @@ ricker_stan(
 \arguments{
 \item{data}{A list or data frame containing complete vectors for: brood year (by), Spawners (s) and log(Recruits/Spawners) (logRS) time series.}
 
+\item{ac}{Logical. Are residuals autocorrelated? Default is FALSE}
+
 \item{smax_priors}{User-specified smax priors, sampled from a normal distribution, should be formatted as: c(mean, sd). Defaults to mean = half maximum observed spawners, sd = max. observed spawners (from time series).}
 
 \item{control}{output of stancontrol}
@@ -32,8 +34,6 @@ chain. The default is 200.}
 (including warmup). The default is 1000.}
 
 \item{...}{Anything else that would be passed to rstan::sampling}
-
-\item{AC}{Logical. Are residuals autocorrelated? Default is FALSE}
 }
 \value{
 a list containing the

@@ -108,19 +108,21 @@ Type objective_function<Type>::operator() ()
     if(stan_flag) pnll -= logsigma;
   }
   
-  vector<Type> pred_logRS(timeSteps), pred_logR(timeSteps), residuals(timeSteps) ;
+  vector<Type> pred_logRS(timeSteps), pred_logR(timeSteps), residuals(timeSteps), ll(timeSteps);
  
   pred_logRS(0) = logalpha - beta * S(0) ;
   pred_logR(0) = pred_logRS(0) + log(S(0));
   residuals(0) = logRS(0) - pred_logRS(0);
     
   nll+= -dnorm(logRS(0),pred_logRS(0),sigma_noar,true);
+  ll(0) = dnorm(logRS(0),pred_logRS(0),sigma_noar,true);
 
   for(int i=1;i<timeSteps;i++){
     if(!isNA(logRS(i))){     
       pred_logRS(i) = logalpha - beta * S(i) ;
       pred_logR(i) = pred_logRS(i) + log(S(i));
-      residuals(i) = logRS(i) - pred_logRS(i);     
+      residuals(i) = logRS(i) - pred_logRS(i);  
+      ll(i) = dnorm(logRS(i),pred_logRS(i) + residuals(i-1) * rhoo ,sigma,true);   
       nll+=-dnorm(logRS(i),pred_logRS(i) + residuals(i-1) * rhoo ,sigma,true);      
     } 
   }
@@ -145,6 +147,7 @@ Type objective_function<Type>::operator() ()
   REPORT(Smax)
   REPORT(umsy)
   REPORT(Smsy)
+  REPORT(ll);
   REPORT(nll);
   REPORT(pnll);  
   REPORT(log_lik_oos);

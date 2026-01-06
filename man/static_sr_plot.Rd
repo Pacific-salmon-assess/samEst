@@ -24,6 +24,8 @@ static_sr_plot(
 \item{plot.params}{TRUE or FALSE, indicating whether to plot Ricker parameter values onto the plot}
 
 \item{resids}{TRUE or FALSE, indicating whether to produce two plots with the spawner-recruit curve and the residuals of the fit over time}
+
+\item{hpd}{value for 0.X (e.g. 0.95, 0.9, etc) credibility intervals - for Stan models only}
 }
 \value{
 returns the compiled rstan code for a given S-R model
