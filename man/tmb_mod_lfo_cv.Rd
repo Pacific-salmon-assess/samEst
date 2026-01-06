@@ -12,9 +12,9 @@ tmb_mod_lfo_cv(
   dirichlet_prior = NULL,
   priors_flag = 1,
   sig_p_sd = 1,
-  priorlogb = c("default", "maxobsS"),
-  logb_p_mean = -12,
-  logb_p_sd = 3
+  priorSmax = c("default", "maxobsS")[1],
+  Smax_mean = exp(12),
+  Smax_sd = exp(12)
 )
 }
 \arguments{
@@ -36,7 +36,7 @@ k_regime x k_regime matrix. If NULL prior is set to matrix(1,nrow=k_regime,ncol=
 
 \item{sig_p_sd}{sd for half normal prior on sigma parameter. default is 1.}
 
-\item{priorlogb}{Options are : "default" or "maxobsS", default will rely on fixed values provided by the user,
+\item{priorSmax}{Options are : "default" or "maxobsS", default will rely on fixed values provided by the user,
 "maxobsS" will be calculated based on the observed data.}
 }
 \value{
