@@ -11,8 +11,10 @@ ricker_TMBstan(
   tmb_map = list(),
   AC = FALSE,
   priors_flag = 1,
-  stan_flag = 0,
+  stan_flag = 1,
   sig_p_sd = 1,
+  Smax_mean = 230000,
+  Smax_sd = 230000,
   chains = 6,
   iter = 5000,
   warmup = floor(iter/2)

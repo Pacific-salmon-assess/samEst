@@ -7,6 +7,7 @@
 
 devtools::document()
 
+
 devtools::load_all()
 
 ?ricker_TMB
@@ -17,16 +18,7 @@ devtools::build_rmd("vignettes/samEst.Rmd")
 usethis::use_logo("man/figures/samEst_large.png")
 
 
-#lfo tmb testing
-lfostatic<-tmb_mod_lfo_cv(data=harck,model='static', L=round((2/3)*nrow(harck)))
-lfoac <- tmb_mod_lfo_cv(data=harck,model='staticAC', L=round((2/3)*nrow(harck)))
-lfoalpha <- tmb_mod_lfo_cv(data=harck,model='rw_a', siglfo="obs", L=round((2/3)*nrow(harck)))
-lfobeta <- tmb_mod_lfo_cv(data=harck,model='rw_b', siglfo="obs", L=round((2/3)*nrow(harck)))
-lfoalphabeta <- tmb_mod_lfo_cv(data=harck,model='rw_both', siglfo="obs", L=round((2/3)*nrow(harck)))
-lfohmma <- tmb_mod_lfo_cv(data=harck,model='HMM_a', L=round((2/3)*nrow(harck)))
-lfohmmb <- tmb_mod_lfo_cv(data=harck,model='HMM_b', L=round((2/3)*nrow(harck)))
-lfohmm <- tmb_mod_lfo_cv(data=harck,model='HMM', L=round((2/3)*nrow(harck)))
-
+#lfo tmb test
 #combine simple and AR
 
 p <- ricker_TMB_deprecated(data=harck, priors_flag=1)

@@ -97,8 +97,9 @@ sigb ~ gamma(2,1/3)
 }
 \examples{
 data(harck)
-ricker_rwa_TMB(data=harck)
-
+ptva <- ricker_rw_TMB(data=harck,tv.par="a", Smax_mean=250000,Smax_sd=200000)
+ptvb <- ricker_rw_TMB(data=harck,tv.par="b",sig_p_sd=1)
+ptvab <- ricker_rw_TMB(data=harck,tv.par="both")
 
 }
 \references{

@@ -247,10 +247,8 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
   if(is.null(ini_param)){
     magS <- log10_ceiling(max(data$S))
     initlm<-lm(logRS~S, data=data)
-  }
 
-  if(is.null(ini_param)){
-      tmb_params <- list(logalpha   = initlm$coefficients[[1]],
+    tmb_params <- list(logalpha   = initlm$coefficients[[1]],
                    logSmax = ifelse(initlm$coefficients[[2]]>0,
                                    log(magS),
                                    log(-1/initlm$coefficients[[2]])),

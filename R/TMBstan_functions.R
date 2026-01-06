@@ -48,16 +48,22 @@
 #' rickerTMB(data=harck)
 #' 
 ricker_TMBstan <- function(data,  silent = FALSE, control = TMBcontrol(), 
-  tmb_map = list(), AC=FALSE, priors_flag=1, stan_flag=0,sig_p_sd=1,
+  tmb_map = list(), AC=FALSE, priors_flag=1, stan_flag=1,sig_p_sd=1,
+  Smax_mean=230000,Smax_sd=230000,
   chains=6,iter=5000, warmup = floor(iter/2)) {
+ 
+  priorslogSmax<-log_prior_params(Smax_mean,Smax_sd)
+  logsmax_p_mean=priorslogSmax$logsmax_pr_mean
+  logsmax_p_sd=priorslogSmax$logsmax_pr_sig
 
-  
   tmb_data <- list(
-    obs_S = data$S,
-    obs_logRS = data$logRS,
+    S = data$S,
+    logRS = data$logRS,
     priors_flag=priors_flag,
     stan_flag=stan_flag,
     sig_p_sd=sig_p_sd,
+    logsmax_p_sd=logsmax_p_sd,
+    logsmax_p_mean=logsmax_p_mean,
     y_oos=mean(data$logRS),
     x_oos=mean(data$S)
   )
@@ -66,51 +72,39 @@ ricker_TMBstan <- function(data,  silent = FALSE, control = TMBcontrol(),
   initlm <- lm(logRS~S, data=data)
   tmb_random <- NULL
 
-  if(!AC){
-    tmb_params <- list(
-      alpha   = initlm$coefficients[[1]],
-      logbeta = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
-      logsigobs = log(1)
+  tmb_params <- list(
+      logalpha   = initlm$coefficients[[1]],
+      logSmax = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-1/initlm$coefficients[[2]])),
+      logsigma = log(1),
+      rho=0
     )
-    lowlimit <- c(-4,-20,log(0.01))
-    hightlimit <- c(20,-4,log(2))
+   lowlimit <- c(0.01,4,log(0.01),-100)
+   hightlimit <- c(20,20,log(3),100)
 
-    tmb_obj <- TMB::MakeADFun(data = tmb_data, 
+  if(!AC){
+    tmb_map$rho<-as.factor(NA)
+    lowlimit <- c(0.01,4,log(0.01))
+    hightlimit <- c(20,20,log(3))
+  }  
+  
+  tmb_obj <- TMB::MakeADFun(data = tmb_data, 
                              parameters = tmb_params, 
                              map = tmb_map,
                              random = tmb_random, 
-                             DLL = "Ricker_simple", 
+                             DLL = "Ricker_simple_autocorr", 
                              silent = silent)
+
+  tmb_opt <- stats::nlminb(start = tmb_obj$par, 
+                          objective = tmb_obj$fn, 
+                          gradient = tmb_obj$gr,
+                          control = control)
   
-  }else{
-    tmb_params <- list(
-      alpha   = initlm$coefficients[[1]],
-      logbeta = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
-      logsigobs = log(1),
-      rho=0
-    )
-
-    lowlimit <- c(-4,-20,log(0.01),-1)
-    hightlimit <- c(20,-4,log(2),1)
-   
-
-    tmb_obj <- TMB::MakeADFun(data = tmb_data,
-                              parameters = tmb_params, 
-                              map = tmb_map,
-                              random = tmb_random, 
-                              DLL = "Ricker_autocorr", 
-                              silent = silent)
-  }
-
-
-
-
   tmb_mcmc <- tmbstan::tmbstan(tmb_obj, chains=chains,
               iter=iter, init="random",
               lower=lowlimit , upper=hightlimit,
-               control = list(adapt_delta = 0.98),
-               seed = 123,
-               warmup = warmup)
+              control = list(adapt_delta = 0.98),
+              seed = 123,
+              warmup = warmup)
 
     mc <- extract(tmb_mcmc, pars=names(tmb_obj$par),
               inc_warmup=FALSE, permuted=FALSE)
@@ -126,8 +120,9 @@ ricker_TMBstan <- function(data,  silent = FALSE, control = TMBcontrol(),
     Smax <- NULL
     umsy <- NULL 
     Smsy <- NULL  
-    pred_logR<-matrix(NA,nrow=nrow(posterior),ncol=data$S)
-    pred_logRS<-matrix(NA,nrow=nrow(posterior),ncol=data$S)
+    rho <- NULL
+    pred_logR<-matrix(NA,nrow=nrow(posterior),ncol=length(data$S))
+    pred_logRS<-matrix(NA,nrow=nrow(posterior),ncol=length(data$S))
 
 
 
@@ -137,12 +132,13 @@ ricker_TMBstan <- function(data,  silent = FALSE, control = TMBcontrol(),
       alpha[i] <- r$alpha
       sigobs[i] <- r$sigobs  
       beta[i] <- r$beta
-      Smax[i] <- r$Smax
+      Smax[i] <- r$Smax      
       umsy[i] <- r$umsy  
       Smsy[i] <- r$Smsy  
+      rho[i] <- r$rhoo  
       pred_logR[i,] <- r$pred_logR
       pred_logRS[i,] <- r$pred_logRS
-      ll[i,] <-r$ll
+      ll[i,] <-r$nll + r$pnll
       
     }
 
@@ -232,7 +228,7 @@ ricker_TMBstan <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' 
 ricker_rw_TMBstan <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
   control = list(adapt_delta = 0.98), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=1,
-  sig_p_sd=1, siga_p_sd=1, sigb_p_sd=1, logb_p_mean=-12,logb_p_sd=3,
+  sig_p_sd=1, siga_p_sd=1, sigb_p_sd=1, Smax_mean=230000,Smax_sd=230000,
    chains=6,iter=10000 ,laplace=FALSE, warmup = floor(iter/2),...) {
 
   #===================================
@@ -243,117 +239,88 @@ ricker_rw_TMBstan <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     obs_logRS = data$logRS,
     priors_flag=priors_flag,
     stan_flag=stan_flag,
-    sig_p_sd=sig_p_sd, 
-    logb_p_mean=logb_p_mean,
-    logb_p_sd=logb_p_sd
+    sig_p_sd=sig_p_sd,
+    logsmax_p_mean=logsmax_p_mean,
+    logsmax_p_sd=logsmax_p_sd,
+    siga_p_sd=siga_p_sd,
+    sigb_p_sd=sigb_p_sd
   )
+  
+   ##Smax lognormal prior
+  priorslogSmax<-log_prior_params(Smax_mean,Smax_sd)
+  logsmax_p_mean=priorslogSmax$logsmax_pr_mean
+  logsmax_p_sd=priorslogSmax$logsmax_pr_sig
+
+
 
   if(is.null(ini_param)){
     magS <- log10_ceiling(max(data$S))
     initlm<-lm(logRS~S, data=data)
+    
+    tmb_params <- list(logalpha   = initlm$coefficients[[1]],
+                   logSmax = ifelse(initlm$coefficients[[2]]>0,
+                                   log(magS),
+                                   log(-1/initlm$coefficients[[2]])),
+                   logsigobs = log(.5),
+                   logsiga = log(.5),
+                   logsigb = log(.5),
+                   epslogalpha_t=rep(0.1,length(tmb_data$obs_S)),
+                   epslogsmax_t=rep(0.1,length(tmb_data$obs_S)))
+  }else{
+    tmb_params <-ini_param
   }
+
 
   if(tv.par=="a"){
 
-    tmb_data$siga_p_sd=siga_p_sd
+    tmb_data$options_z=c(1,0)
 
-    if(is.null(ini_param)){
-      tmb_params <- list(alphao   = initlm$coefficients[[1]],
-                   logbeta = ifelse(initlm$coefficients[[2]]>0,
-                                   log(1/magS),
-                                   log(-initlm$coefficients[[2]])),
-                   logsigobs = log(.5),
-                   logsiga = log(.5),
-                   alpha = rep(1,length(tmb_data$obs_S)))
-    }else{
-      tmb_params <-ini_param
-    }
-    tmb_random <- "alpha"
-    tmb_obj <- TMB::MakeADFun(data = tmb_data, 
-                              parameters = tmb_params, 
-                              map = tmb_map,
-                              random = tmb_random, 
-                              DLL = "Ricker_tva", 
-                              silent = silent)
+    tmb_random <- "epslogalpha_t"
 
-    lowlimit <- c(0.01,-20,log(0.01),log(0.01))
-    hightlimit <- c(20,-4,log(2),log(2))
-
-   clss <- "Ricker_tva"
-   npar <- 4
-   npar_all <- 4+(length(data$S)-1)
-
-  }else if(tv.par=="b"){
-
-    tmb_data$sigb_p_sd=sigb_p_sd
-
-    if(is.null(ini_param)){
+    tmb_map$logsigb = factor(NA)
+    tmb_map$epslogsmax_t = factor( rep(NA,length(tmb_params$epslogsmax_t)) )
      
-      tmb_params <- list(logbetao = ifelse(initlm$coefficients[[2]]>0,
-                                           log(1/magS),
-                                           log(-initlm$coefficients[[2]])),
-                        alpha   = max(initlm$coefficients[[1]],.5),                 
-                        logsigobs = log(.6),
-                        logsigb = log(.2),
-                        logbeta=rep(ifelse(initlm$coefficients[[2]]>0,
-                                           log(1/max(data$S)),
-                                           log(-initlm$coefficients[[2]])),
-                                    length(data$S)))
-    }else{
-      tmb_params <-ini_param
-    }
-
-    tmb_random <- "logbeta"
-
-    tmb_obj <- TMB::MakeADFun(data = tmb_data, 
-      parameters = tmb_params, 
-      map = tmb_map,
-      random = tmb_random, 
-      DLL = "Ricker_tvlogb", 
-      silent = silent)
+    npar <- 4
+    npar_all <- 4+(length(data$S)-1)
 
     lowlimit <- c(-20,0.01,log(0.01),log(0.01))
     hightlimit <- c(-4,20,log(2),log(2))
 
-    clss <- "Ricker_tvlogb"
+  }else if(tv.par=="b"){
+
+    tmb_data$options_z=c(0,1)
+
+    tmb_random <- "epslogsmax_t"
+
+    tmb_map$logsiga = factor(NA)
+    tmb_map$epslogalpha_t = factor( rep(NA,length(tmb_params$epslogalpha_t)) )
+
     npar <- 4
     npar_all <- 4+(length(data$S)-1)
 
+    lowlimit <- c(-20,0.01,log(0.01),log(0.01))
+    hightlimit <- c(-4,20,log(2),log(2))
+
+
   }else if(tv.par=="both"){
 
-    tmb_data$siga_p_sd=siga_p_sd
-    tmb_data$sigb_p_sd=sigb_p_sd
-    
-    if(is.null(ini_param)){    
-      tmb_params <- list(logbetao = ifelse(initlm$coefficients[[2]]>0,
-                                           log(1/magS),
-                                           log(-initlm$coefficients[[2]])),
-                        alphao   = max(initlm$coefficients[[1]],.5),                 
-                        logsigobs = log(.6),
-                        logsiga = log(.2),
-                        logsigb = log(.2),
-                        logbeta=log(rep(ifelse(initlm$coefficients[[2]]>0,
-                                               log(magS),
-                                               -initlm$coefficients[[2]]),
-                                        length(data$S))),
-                        alpha = rep(1,length(tmb_data$obs_S))      
-     )
+    tmb_data$options_z=c(1,1)
+       
+    tmb_random <- c("epslogalpha_t", "epslogsmax_t")
 
-    }else{
-      tmb_params <-ini_param
-    }
-    tmb_random <- c("logbeta", "alpha")
+    npar <- 5
+    npar_all <- 5+(length(data$S)-1)*2
 
-    tmb_obj <- TMB::MakeADFun(data = tmb_data, 
-      parameters = tmb_params, 
-      map = tmb_map,
-      random = tmb_random, 
-      DLL = "Ricker_tva_tvb", 
-      silent = silent)
-  
     lowlimit <- c(-20,0.01,log(0.0),log(0.01),log(0.01))
     hightlimit <- c(-4,20,log(2),log(2),log(2))
     
+
+  }else{
+    stop(paste("tv.par",tv.par,"not recognized."))
+  }
+   
+  
+   
     clss <- "Ricker_tva_tvb"
     npar <- 5
     npar_all <- 5+(length(data$S)-1)*2
