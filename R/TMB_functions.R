@@ -37,7 +37,7 @@
 #' * sigma_noar - if AC= TRUE, MLE estimates for the unadjusted standard deviation sigma 
 #' * rho - if AC=TRUE, MLE estimates for autocorrelation coefficient 
 #' * Smsy - Estimates of Smsy based on estimated logalpha and Smax parameters
-#' * umsy -Estimates of umsy based on estimated logalpha parameter         
+#' * Umsy -Estimates of umsy based on estimated logalpha parameter         
 #' * residuals - observed - predicted logRS estimates
 #' * AICc - AICc values, given by 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1)), excluding prior components
 #' * BIC - BIC values, excluding prior components
@@ -130,7 +130,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
     sigma_noar = ifelse(AC,tmb_obj$report()$sigma_noar,NA),
     rho        = ifelse(AC,tmb_obj$report()$rhoo,NA),
     Smsy       = tmb_obj$report()$Smsy,
-    umsy       = tmb_obj$report()$umsy,
+    Umsy       = tmb_obj$report()$umsy,
     residuals  = tmb_obj$report()$residuals,
     AICc       = AICc,
     BIC        = BIC,
@@ -381,7 +381,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     Smax     = if(tv.par=="a"){tmb_obj$report()$Smax}else{tmb_obj$report()$Smax_t},
     sigma      = tmb_obj$report()$sigobs,
     Smsy      = tmb_obj$report()$Smsy,
-    umsy      = tmb_obj$report()$umsy,
+    Umsy      = tmb_obj$report()$umsy,
     sigma_a      = ifelse(tv.par=="a"|tv.par=="both",
                        tmb_obj$report()$siga,
                        NA),
@@ -620,7 +620,7 @@ ricker_hmm_TMB <- function(data,
     qij      = tmb_obj$report()$qij,
     Smsy      = tmb_obj$report()$Smsy,
     Smax      = if(tv.par == "a"){tmb_obj$report()$Smax[1]}else{tmb_obj$report()$Smax},
-    umsy      = if(tv.par == "b"){tmb_obj$report()$umsy[1]}else{tmb_obj$report()$umsy},
+    Umsy      = if(tv.par == "b"){tmb_obj$report()$umsy[1]}else{tmb_obj$report()$umsy},
     probregime =  tmb_obj$report()$r_pred,
     regime =  apply(tmb_obj$report()$r_pred, 2,which.max),
     AICc       = AICc,
@@ -724,7 +724,7 @@ ricker_kf_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_ma
     sigobs    = tmb_obj$report()$sige,
     siga      = tmb_obj$report()$sigw,
     Smsy      = tmb_obj$report()$Smsy,
-    umsy      = tmb_obj$report()$umsy,
+    Umsy      = tmb_obj$report()$umsy,
     model      = tmb_opt,
     tmb_data   = tmb_data,
     tmb_params = tmb_params,

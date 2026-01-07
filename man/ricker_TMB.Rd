@@ -50,7 +50,7 @@ a list containing several model outputs:
 \item sigma_noar - if AC= TRUE, MLE estimates for the unadjusted standard deviation sigma
 \item rho - if AC=TRUE, MLE estimates for autocorrelation coefficient
 \item Smsy - Estimates of Smsy based on estimated logalpha and Smax parameters
-\item umsy -Estimates of umsy based on estimated logalpha parameter
+\item Umsy -Estimates of umsy based on estimated logalpha parameter
 \item residuals - observed - predicted logRS estimates
 \item AICc - AICc values, given by 2\emph{nll + 2}npar +(2\emph{npar}(npar+1)/(nrow(data)-npar-1)), excluding prior components
 \item BIC - BIC values, excluding prior components

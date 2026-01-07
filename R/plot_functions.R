@@ -26,9 +26,10 @@ static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.pa
   lines(x=rep(mod$Smax,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smax)*mod$Smax),col='darkred',lwd=2)
   lines(x=rep(mod$Smsy,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smsy)*mod$Smsy),col='navy',lwd=2)
   x_n=seq(0,max(df$S))
+  p_n=exp(mod$logalpha-mod$beta*x_n)*x_n
   
   lines(p_n~x_n,lwd=3,col=adjustcolor('black',alpha.f=0.8))
-  col.p=viridis::viridis(length(d$by))
+  col.p=viridis::viridis(length(df$by))
   lines(df$R~df$S,col=adjustcolor('black',alpha.f=0.2),lwd=0.5)
   points(df$R~df$S,pch=21,bg=col.p,cex=1.5)
   text(x=df$S-max(df$S)*0.01,y=df$R+max(df$R)*0.03,df$by,cex=0.7)
@@ -37,8 +38,8 @@ static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.pa
     text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]*0.01,paste('log(a):',round(mod$logalpha,2),sep=' '),adj=0)
     text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.1,x=par('usr')[2]*0.01,paste('Smax:',round(mod$Smax),sep=' '),adj=0,col='darkred')
     text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.15,x=par('usr')[2]*0.01,paste('Smsy:',round(mod$Smsy),sep=' '),adj=0,col='navy')
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.2,x=par('usr')[2]*0.01,paste('Umsy:',round(mod$umsy,2),sep=' '),adj=0)
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.25,x=par('usr')[2]*0.01,paste('sigma:',round(mod$sigar,2),sep=' '),adj=0)
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.2,x=par('usr')[2]*0.01,paste('Umsy:',round(mod$Umsy,2),sep=' '),adj=0)
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.25,x=par('usr')[2]*0.01,paste('sigma:',round(mod$sigma,2),sep=' '),adj=0)
     if(is.na(mod$rho)==FALSE){
       text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]*0.01,paste('rho:',round(mod$rho,2),sep=' '),adj=0)
     }
