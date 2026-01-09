@@ -35,13 +35,13 @@ static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.pa
   text(x=df$S-max(df$S)*0.01,y=df$R+max(df$R)*0.03,df$by,cex=0.7)
   
   if(plot.params==TRUE){
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.05,paste('log(a):',round(mod$logalpha,2),sep=' '),adj=0)
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.1,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.05,paste('Smax:',round(mod$Smax),sep=' '),adj=0,col='darkred')
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.15,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.05,paste('Smsy:',round(mod$Smsy),sep=' '),adj=0,col='navy')
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.2,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.05,paste('Umsy:',round(mod$Umsy,2),sep=' '),adj=0)
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.25,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.05,paste('sigma:',round(mod$sigma,2),sep=' '),adj=0)
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.15,paste('log(a):',round(mod$logalpha,2),sep=' '),adj=0)
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.1,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.15,paste('Smax:',round(mod$Smax),sep=' '),adj=0,col='darkred')
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.15,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.15,paste('Smsy:',round(mod$Smsy),sep=' '),adj=0,col='navy')
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.2,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.15,paste('Umsy:',round(mod$Umsy,2),sep=' '),adj=0)
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.25,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.15,paste('sigma:',round(mod$sigma,2),sep=' '),adj=0)
     if(is.na(mod$rho)==FALSE){
-      text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]*0.01,paste('rho:',round(mod$rho,2),sep=' '),adj=0)
+      text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.3,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.15,paste('rho:',round(mod$rho,2),sep=' '),adj=0)
     }
   }
   if(resids==TRUE){
@@ -56,6 +56,40 @@ static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.pa
   
 }
 
+rw_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=FALSE,freq.pred=3){
+  if(is.null(title)==T){title=''}
+  if(sr.only==TRUE){fig.pars[2]=fig.pars[2]/2}
+  if(make.pdf==TRUE){
+    pdf(paste(title,'_rw_sr.pdf',sep=''),width=fig.pars[1],height=fig.pars[2])
+  }
+  plot(df$R~df$S,xlim=c(0,max(df$S)),ylim=c(0,max(df$R)),type='n',bty='l',xlab='Spawners',ylab='Recruits',main=title)
+  abline(c(0,1),lty=5)
+  col.p=viridis::viridis(length(df$by))
+  lines(df$R~df$S,col=adjustcolor('black',alpha.f=0.2),lwd=0.5)
+  points(df$R~df$S,pch=21,bg=col.p,cex=1.5)
+  text(x=df$S-max(df$S)*0.01,y=df$R+max(df$R)*0.03,df$by,cex=0.7)
+  
+  x_n=seq(0,max(df$S))
+
+  for(t in seq_along(1,nrow(df),by=freq.pred)){
+    if(length(mod$logalpha)>1){
+      p_n=exp(mod$logalpha[t]-mod$beta*x_n)*x_n
+    }else if(length(mod$Smax)>1){
+      p_n=exp(mod$logalpha-mod$beta[t]*x_n)*x_n
+    }
+      lines(p_n~x_n,lwd=w,col=adjustcolor(col.p[t],alpha.f=0.8))
+  }
+  if(length(mod$logalpha)>1){
+  plot(mod$logalpha~seq(min(df$by),max(df$by)),type='n',bty='l',xlab='Brood cohort year',ylab=expression(paste('Productivity - log(', alpha['j,t'],')',sep=' ')))
+  abline(h=0,lty=5)
+  lines(mod$residuals~df$by,col=adjustcolor('black',alpha.f=0.2))
+  points(mod$residuals~df$by,pch=21,bg=col.p,cex=1.5)
+  }
+  if(make.pdf==TRUE){
+    dev.off()
+  }
+  
+}
 
 
 

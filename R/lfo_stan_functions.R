@@ -166,8 +166,8 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=2,dirichlet_pr
 #' @examples
 #' model_weights(rbind(ll1,ll2))
 
-model_weights<- function(x,form=c('PBMA','AIC'),type=c('full','d90','d80')){
-  if(form=='PBMA'){
+model_weights<- function(x,form=c('stan','TMB'),type=c('full','d90','d80')){
+  if(form=='stan'){
     if(type=='full'){
       elpd_1=apply(x,1,sum) #
       elpd_2=NA
@@ -206,11 +206,11 @@ model_weights<- function(x,form=c('PBMA','AIC'),type=c('full','d90','d80')){
       w[i]=elpd_2[i]/sum(elpd_2) 
     }
   }
-  if(form=='AIC'){
+  if(form=='TMB'){
     w=NA
     for(i in 1:length(x)){w[i]=exp(-0.5*x[i])/sum(exp(-0.5*x))}
   }
-  return(w)
+  return(round(w,digits=3))
 }
 
 #' AIC for stan models
