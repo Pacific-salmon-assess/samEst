@@ -15,7 +15,7 @@
 #' @param control output from [TMBcontrol()] function, to be passed to nlminb()
 #' @param tmb_map optional, mapping list indicating if parameters should be estimated of fixed.  
 #' Default is all parameters are estimated
-#' @param AC Logical. Are residuals autocorrelated? Default is FALSE
+#' @param ac Logical. Are residuals autocorrelated? Default is FALSE
 #' @param priors_flag Integer, 1 priors are included in estimation model, 0 priors are not included.
 #'  See details for priors documentation. See details for priors documentation.
 #' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
@@ -62,7 +62,7 @@
 #' rickerTMB(data=harck)
 #' 
 ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), 
-  tmb_map = list(), AC=FALSE, priors_flag=1, stan_flag=0,sig_p_sd=1,
+  tmb_map = list(), ac=FALSE, priors_flag=1, stan_flag=0,sig_p_sd=1,
   Smax_mean=230000,Smax_sd=230000) {
 
 
@@ -95,7 +95,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
       rho=0
     )
 
-  if(!AC){   
+  if(!ac){   
     tmb_map$rho<-as.factor(NA)
   }
 
@@ -127,8 +127,8 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
     beta       = tmb_obj$report()$beta,
     Smax       = tmb_obj$report()$Smax,
     sigma      = tmb_obj$report()$sigma,
-    sigma_noar = ifelse(AC,tmb_obj$report()$sigma_noar,NA),
-    rho        = ifelse(AC,tmb_obj$report()$rhoo,NA),
+    sigma_noar = ifelse(ac,tmb_obj$report()$sigma_noar,NA),
+    rho        = ifelse(ac,tmb_obj$report()$rhoo,NA),
     Smsy       = tmb_obj$report()$Smsy,
     Umsy       = tmb_obj$report()$umsy,
     residuals  = tmb_obj$report()$residuals,

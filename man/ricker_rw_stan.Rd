@@ -6,7 +6,7 @@
 \usage{
 ricker_rw_stan(
   data,
-  par = c("a", "b", "both"),
+  tv.par = c("a", "b", "both"),
   smax_priors = NULL,
   control = stancontrol(adapt_delta = 0.99),
   mod = NULL,
@@ -19,7 +19,7 @@ ricker_rw_stan(
 \arguments{
 \item{data}{A list or data frame containing complete vectors for: brood year (by), Spawners (s) and log(Recruits/Spawners) (logRS) time series. Use sr_format for the correct column names.}
 
-\item{par}{Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters (both)}
+\item{tv.par}{Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters (both)}
 
 \item{smax_priors}{User-specified smax priors, sampled from a normal distribution, should be formatted as: c(mean, sd)}
 

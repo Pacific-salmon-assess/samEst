@@ -193,7 +193,6 @@ model{
   F_rw ~ beta(2,4); //fraction attributed to random walk in productivity  
  
   for(n in 1:N) R_S[n] ~ normal(logalpha[ii[n]] - beta*S[n], sigma); 
-  m
 }
  generated quantities{
      vector[L] Umsy;

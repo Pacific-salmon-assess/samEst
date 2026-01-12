@@ -122,7 +122,7 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL, control = st
 #' random walks Ricker model estimated with stan
 #'
 #' @param data A list or data frame containing complete vectors for: brood year (by), Spawners (s) and log(Recruits/Spawners) (logRS) time series. Use sr_format for the correct column names. 
-#' @param par Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters (both)
+#' @param tv.par Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters (both)
 #' @param smax_priors User-specified smax priors, sampled from a normal distribution, should be formatted as: c(mean, sd)
 #' @param control output of stancontrol
 #' @param warmup To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
@@ -157,12 +157,12 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL, control = st
 #' data(harck)
 #' ricker_rw_stan(data=harck)
 #' 
-ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,control = stancontrol(adapt_delta=0.99), mod=NULL,
+ricker_rw_stan <- function(data, tv.par=c('a','b','both'),smax_priors=NULL,control = stancontrol(adapt_delta=0.99), mod=NULL,
   warmup=300,  chains = 6, iter = 1000,...) {
   par=match.arg(par,choices=c('a','b','both'))
 
   if(is.null(mod)==T){
-    sm=sr_mod(type='rw',par=par)
+    sm=sr_mod(type='rw',par=tv.par)
   }else{sm=mod}
   
   if(is.null(smax_priors)==TRUE){
@@ -190,7 +190,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,control 
 
   aa <- rstan::summary(fit)
   
-    if(par=='a'){
+    if(tv.par=='a'){
       mc <- rstan::extract(fit,pars=c('logalpha','beta','Smax','Smsy','Umsy','sigma','sigma_a','mu','epsilon'),permuted=T) 
       mc2=as.data.frame(do.call(cbind,mc))
       colnames(mc2)=c(paste('logalpha[',seq(1:datm$L),']',sep=''),'beta','Smax',paste('Smsy[',seq(1:datm$L),']',sep=''),paste('Umsy[',seq(1:datm$L),']',sep=''),'sigma','sigma_a',paste('mu[',seq(1:datm$N),']',sep=''),paste('epsilon[',seq(1:datm$N),']',sep=''))
@@ -209,7 +209,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,control 
                 stanfit=fit)
     
     }
-    if(par=='b'){
+    if(tv.par=='b'){
       mc <- rstan::extract(fit,pars=c('logalpha','beta','Smax','Smsy','Umsy','sigma','sigma_a','mu','epsilon'),permuted=T) 
       mc2=as.data.frame(do.call(cbind,mc))
       colnames(mc2)=c('logalpha',paste('beta[',seq(1:datm$L),']',sep=''),paste('Smax[',seq(1:datm$L),']',sep=''),paste('Smsy[',seq(1:datm$L),']',sep=''),'Umsy','sigma','sigma_b',paste('mu[',seq(1:datm$N),']',sep=''),paste('epsilon[',seq(1:datm$N),']',sep=''))
@@ -227,7 +227,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,control 
                 full_posterior=mc2,
                 stanfit=fit)
      }
-    if(par=='both'){
+    if(tv.par=='both'){
       mc <- rstan::extract(fit,pars=c('logalpha','beta','Smax','Smsy','Umsy','sigma','sigma_a','sigma_b','mu','epsilon'),permuted=T) 
       mc2=as.data.frame(do.call(cbind,mc))
       colnames(mc2)=c(paste('logalpha[',seq(1:datm$L),']',sep=''),paste('beta[',seq(1:datm$L),']',sep=''),paste('Smax[',seq(1:datm$L),']',sep=''),paste('Smsy[',seq(1:datm$L),']',sep=''),paste('Umsy[',seq(1:datm$L),']',sep=''),'sigma','sigma_a','sigma_b',paste('mu[',seq(1:datm$N),']',sep=''),paste('epsilon[',seq(1:datm$N),']',sep=''))

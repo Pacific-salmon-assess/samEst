@@ -9,7 +9,7 @@ ricker_TMB(
   silent = FALSE,
   control = TMBcontrol(),
   tmb_map = list(),
-  AC = FALSE,
+  ac = FALSE,
   priors_flag = 1,
   stan_flag = 0,
   sig_p_sd = 1,
@@ -27,7 +27,7 @@ ricker_TMB(
 \item{tmb_map}{optional, mapping list indicating if parameters should be estimated of fixed.
 Default is all parameters are estimated}
 
-\item{AC}{Logical. Are residuals autocorrelated? Default is FALSE}
+\item{ac}{Logical. Are residuals autocorrelated? Default is FALSE}
 
 \item{priors_flag}{Integer, 1 priors are included in estimation model, 0 priors are not included.
 See details for priors documentation. See details for priors documentation.}
