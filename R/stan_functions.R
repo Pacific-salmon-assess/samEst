@@ -335,7 +335,7 @@ transformed parameters{
     Smax[t] = Smax[t-1] + b_dev[t-1]*sigma_b;
   } 
    beta=1.0./Smax;
-  mu = logalpha[ii] - beta[ii]*S; //expectation through time
+  for(i in 1:N) mu[i] = logalpha[ii[i]] - beta[ii[i]]*S[i]; //expectation through time
   epsilon = R_S - mu; //residual productivity series
 }  
 
