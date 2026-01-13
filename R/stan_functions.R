@@ -226,14 +226,6 @@ if(type=='rw'&par=='b'){
   vector[N] S; //spawners in time T
  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
- real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
-}
-transformed data{
-real logsmax_pr;
-real logsmax_pr_sig;
-
-logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
   real<lower=0> logalpha;// initial productivity (on log scale) - fixed in this
@@ -255,7 +247,7 @@ transformed parameters{
   vector[L] logSmax; //log(smax) in each year
   vector<lower=0>[L] Smax; //smax in each year
   vector<lower=0>[L] beta; //beta in each year
-   vector[N] mu; //expectation
+  vector[N] mu; //expectation
   vector[N] epsilon; //residuals
   
   sigma=(1-F_rw)*sigma_tot;
@@ -269,7 +261,7 @@ transformed parameters{
   Smax=exp(logSmax);
   beta=1.0./Smax;
   
-  mu = logalpha - beta[ii]*S; //expectation through time
+  for(i in 1:N) mu[i] = logalpha - beta[ii[i]]*S[i]; //expectation through time
   epsilon = R_S - mu; //residual productivity series
 }  
 
@@ -368,7 +360,7 @@ model{
      vector[L] Umsy;
      vector[L] Smsy;
      vector[N] y_rep;
-           real prior_Smax;
+     real prior_Smax;
  
  prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
 
