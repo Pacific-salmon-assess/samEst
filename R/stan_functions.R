@@ -170,6 +170,8 @@ transformed parameters{
   real<lower = 0> sigma_a;
   real beta = 1.0/Smax;
   vector[L] logalpha; //a in each year (on log scale)
+  vector[N] mu; //expectation
+  vector[N] epsilon; //residuals
   
   sigma=(1-F_rw)*sigma_tot;
   sigma_a=F_rw*sigma_tot;
@@ -179,6 +181,8 @@ transformed parameters{
     logalpha[t] = logalpha[t-1] + a_dev[t-1]*sigma_a; //random walk of logalpha
   }
   
+  mu = logalpha[ii] - beta*S; //expectation through time
+  epsilon = R_S - mu; //residual productivity series
 }  
 model{
   //priors
@@ -192,7 +196,7 @@ model{
   sigma_tot ~ gamma(2,1); //half normal on variance (lower limit of zero)
   F_rw ~ beta(2,4); //fraction attributed to random walk in productivity  
  
-  for(n in 1:N) R_S[n] ~ normal(logalpha[ii[n]] - beta*S[n], sigma); 
+  R_S ~ normal(mu, sigma); 
 }
  generated quantities{
      vector[L] Umsy;
@@ -248,9 +252,11 @@ parameters {
 transformed parameters{
   real<lower = 0> sigma;
   real<lower = 0> sigma_b;
-  vector[L] logSmax; //b in each year
-  vector<lower=0>[L] Smax; //b in each year
-  vector<lower=0>[L] b; //b in each year
+  vector[L] logSmax; //log(smax) in each year
+  vector<lower=0>[L] Smax; //smax in each year
+  vector<lower=0>[L] beta; //beta in each year
+   vector[N] mu; //expectation
+  vector[N] epsilon; //residuals
   
   sigma=(1-F_rw)*sigma_tot;
   sigma_b=F_rw*sigma_tot;
@@ -260,9 +266,11 @@ transformed parameters{
     logSmax[t] = logSmax[t-1] + b_dev[t-1]*sigma_b;
   } 
   
- 
   Smax=exp(logSmax);
   beta=1.0./Smax;
+  
+  mu = logalpha - beta[ii]*S; //expectation through time
+  epsilon = R_S - mu; //residual productivity series
 }  
 
 model{
@@ -276,7 +284,7 @@ model{
   F_rw ~ beta(2,4); //fraction attributed to random walk in productivity   
  
   b_dev ~ std_normal();
- for(n in 1:N) R_S[n] ~ normal(logalpha-beta[ii[n]]*S[n], sigma);
+  R_S ~ normal(mu, sigma);
 }
 generated quantities{
      real Umsy;
@@ -305,7 +313,6 @@ if(type=='rw'&par=='both'){
   vector[N] S; //spawners in time T
  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
- real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 parameters{
   real logalpha0;// initial productivity (on log scale) - fixed in this
@@ -325,7 +332,9 @@ transformed parameters{
   vector<lower=0>[L] Smax; //b in each year
   vector<lower=0>[L] beta; //b in each year
    vector[L] logalpha; //a in each year (log scale)
- 
+  vector[N] mu; //expectation
+  vector[N] epsilon; //residuals
+  
  
   logalpha[1] = logalpha0;
   Smax[1] = Smax0;
@@ -334,6 +343,8 @@ transformed parameters{
     Smax[t] = Smax[t-1] + b_dev[t-1]*sigma_b;
   } 
    beta=1.0./Smax;
+  mu = logalpha[ii] - beta[ii]*S; //expectation through time
+  epsilon = R_S - mu; //residual productivity series
 }  
 
 model{
@@ -351,7 +362,7 @@ model{
   a_dev ~ std_normal();
   b_dev ~ std_normal();
   
-  for(n in 1:N) R_S[n] ~ normal(logalpha[ii[n]]-beta[ii[n]]*S[n], sigma);
+  R_S ~ normal(mu, sigma);
 }
  generated quantities{
      vector[L] Umsy;
