@@ -296,7 +296,7 @@ ricker_rw_stan <- function(data, tv.par=c('a','b','both'),smax_priors=NULL,contr
 ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors=NULL,smax_dists=c('normal','lognormal','cauchy'), dirichlet_stasis_prior=2, full_posterior=FALSE,
   control = stancontrol(), warmup=300,  chains = 6, iter = 1000, mod=NULL,...) {
 
-  par=match.arg(par,choices=c('a','b','both'))
+  par=match.arg(tv.par,choices=c('a','b','both'))
   dirichlet_prior<-matrix(c(dirichlet_stasis_prior,1,1,dirichlet_stasis_prior),nrow=k_regime,ncol=k_regime)
   
   if(is.null(mod)){
