@@ -12,7 +12,7 @@
 #' @export
 #' @examples
 #' m2=sr_mod(type='static',ac = TRUE,par='n',lfo=T)
-sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both'),lfo=FALSE, modelcode=FALSE){
+sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both'),modelcode=FALSE){
   rstan::rstan_options(auto_write = TRUE)
   options(mc.cores = parallel::detectCores())
   

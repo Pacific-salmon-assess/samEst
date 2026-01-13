@@ -159,7 +159,7 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL, control = st
 #' 
 ricker_rw_stan <- function(data, tv.par=c('a','b','both'),smax_priors=NULL,control = stancontrol(adapt_delta=0.99), mod=NULL,
   warmup=300,  chains = 6, iter = 1000,...) {
-  par=match.arg(par,choices=c('a','b','both'))
+  tv.par=match.arg(tv.par,choices=c('a','b','both'))
 
   if(is.null(mod)==T){
     sm=sr_mod(type='rw',par=tv.par)
