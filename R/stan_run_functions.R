@@ -196,7 +196,7 @@ ricker_rw_stan <- function(data, tv.par=c('a','b','both'),smax_priors=NULL,contr
       colnames(mc2)=c(paste('logalpha[',seq(1:datm$L),']',sep=''),'beta','Smax',paste('Smsy[',seq(1:datm$L),']',sep=''),paste('Umsy[',seq(1:datm$L),']',sep=''),'sigma','sigma_a',paste('mu[',seq(1:datm$N),']',sep=''),paste('epsilon[',seq(1:datm$N),']',sep=''))
       
       ans<-list(data=data,
-                logalpha=c(aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"50%"]),
+                logalpha=c(aa$summary[paste('logalpha[',seq(1:datm$L),']',sep=''),"50%"]),
                 beta=c(aa$summary["b","50%"]),
                 Smax=c(aa$summary["Smax","50%"]),
                 Smsy=c(aa$summary[paste('Smsy[',seq(1:datm$L),']',sep=''),"50%"]),
@@ -215,7 +215,7 @@ ricker_rw_stan <- function(data, tv.par=c('a','b','both'),smax_priors=NULL,contr
       colnames(mc2)=c('logalpha',paste('beta[',seq(1:datm$L),']',sep=''),paste('Smax[',seq(1:datm$L),']',sep=''),paste('Smsy[',seq(1:datm$L),']',sep=''),'Umsy','sigma','sigma_b',paste('mu[',seq(1:datm$N),']',sep=''),paste('epsilon[',seq(1:datm$N),']',sep=''))
       
       ans<-list(data=data,
-                logalpha=c(aa$summary["log_a","50%"]),
+                logalpha=c(aa$summary["logalpha","50%"]),
                 beta=c(aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"50%"]),
                 Smax=c(aa$summary[paste('Smax[',seq(1:datm$L),']',sep=''),"50%"]),
                 Smsy=c(aa$summary[paste('Smsy[',seq(1:datm$L),']',sep=''),"50%"]),
@@ -234,7 +234,7 @@ ricker_rw_stan <- function(data, tv.par=c('a','b','both'),smax_priors=NULL,contr
       
       
       ans<-list(data=data,
-           logalpha=c(aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"50%"]),
+           logalpha=c(aa$summary[paste('logalpha[',seq(1:datm$L),']',sep=''),"50%"]),
            beta=c(aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"50%"]),
            Smax=c(aa$summary[paste('Smax[',seq(1:datm$L),']',sep=''),"50%"]),
            Smsy=c(aa$summary[paste('Smsy[',seq(1:datm$L),']',sep=''),"50%"]),
