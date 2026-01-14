@@ -12,7 +12,7 @@
 #' @export
 #' @examples
 #' m2=sr_mod(type='static',ac = TRUE,par='n',lfo=T)
-sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both'),modelcode=FALSE){
+sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('a','b','both'),modelcode=FALSE){
   rstan::rstan_options(auto_write = TRUE)
   options(mc.cores = parallel::detectCores())
   
@@ -157,7 +157,7 @@ parameters{
   real logalpha0;// initial productivity (on log scale)
   real<lower = 0> Smax; //
 
- //variance components  
+ //variance componen  ts  
   real<lower = 0> sigma_tot; //total variance - process + high freq. error
   real<lower=0,upper=1> F_rw; //fraction of variance as random walk
   
@@ -199,7 +199,6 @@ model{
   R_S ~ normal(mu, sigma); 
 }
  generated quantities{
-     vector[L] Umsy;
      vector[L] Smsy;
      real<lower=0> prior_Smax;
  
