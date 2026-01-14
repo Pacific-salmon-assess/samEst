@@ -200,7 +200,6 @@ ricker_rw_stan <- function(data, tv.par=c('a','b','both'),smax_priors=NULL,contr
                 beta=c(aa$summary["beta","50%"]),
                 Smax=c(aa$summary["Smax","50%"]),
                 Smsy=c(aa$summary[paste('Smsy[',seq(1:datm$L),']',sep=''),"50%"]),
-                Umsy=c(aa$summary[paste('Umsy[',seq(1:datm$L),']',sep=''),"50%"]),
                 sigma=c(aa$summary["sigma","50%"]),
                 sigma_a=c(aa$summary["sigma_a","50%"]),
                 residuals=apply(rstan::extract(fit,pars=c('epsilon'),permuted=T),2,median),
