@@ -206,11 +206,10 @@ model{
  prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
  
     vector[N] y_rep;
-    for(n in 1:N){    y_rep[n]=normal_rng(logalpha[ii[n]] - beta*S[n],sigma);
+    for(n in 1:N){y_rep[n]=normal_rng(logalpha[ii[n]] - beta*S[n],sigma);
 }
    
     for(l in 1:L){
-    Umsy[l] = 1-lambert_w0(exp(1-logalpha[l]));
     Smsy[l] = (1-lambert_w0(exp(1-logalpha[l])))/beta;
     }
 }

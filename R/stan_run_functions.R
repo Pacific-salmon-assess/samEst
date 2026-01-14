@@ -197,7 +197,7 @@ ricker_rw_stan <- function(data, tv.par=c('a','b','both'),smax_priors=NULL,contr
       
       ans<-list(data=data,
                 logalpha=c(aa$summary[paste('logalpha[',seq(1:datm$L),']',sep=''),"50%"]),
-                beta=c(aa$summary["b","50%"]),
+                beta=c(aa$summary["beta","50%"]),
                 Smax=c(aa$summary["Smax","50%"]),
                 Smsy=c(aa$summary[paste('Smsy[',seq(1:datm$L),']',sep=''),"50%"]),
                 Umsy=c(aa$summary[paste('Umsy[',seq(1:datm$L),']',sep=''),"50%"]),
