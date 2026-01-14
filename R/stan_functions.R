@@ -168,7 +168,7 @@ parameters{
 transformed parameters{
   real<lower = 0> sigma;
   real<lower = 0> sigma_a;
-  real beta = 1.0/Smax;
+  real<lower=0> beta = 1.0/Smax;
   vector[L] logalpha; //a in each year (on log scale)
   vector[N] mu; //expectation
   vector[N] epsilon; //residuals
@@ -203,7 +203,7 @@ model{
      vector[L] Smsy;
      real<lower=0> prior_Smax;
  
- prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
+    prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
  
     vector[N] y_rep;
     for(n in 1:N){y_rep[n]=normal_rng(logalpha[ii[n]] - beta*S[n],sigma);

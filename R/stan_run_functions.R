@@ -191,9 +191,9 @@ ricker_rw_stan <- function(data, tv.par=c('a','b','both'),smax_priors=NULL,contr
   aa <- rstan::summary(fit)
   
     if(tv.par=='a'){
-      mc <- rstan::extract(fit,pars=c('logalpha','beta','Smax','Smsy','Umsy','sigma','sigma_a','mu','epsilon'),permuted=T) 
+      mc <- rstan::extract(fit,pars=c('logalpha','beta','Smax','Smsy','sigma','sigma_a','mu','epsilon'),permuted=T) 
       mc2=as.data.frame(do.call(cbind,mc))
-      colnames(mc2)=c(paste('logalpha[',seq(1:datm$L),']',sep=''),'beta','Smax',paste('Smsy[',seq(1:datm$L),']',sep=''),paste('Umsy[',seq(1:datm$L),']',sep=''),'sigma','sigma_a',paste('mu[',seq(1:datm$N),']',sep=''),paste('epsilon[',seq(1:datm$N),']',sep=''))
+      colnames(mc2)=c(paste('logalpha[',seq(1:datm$L),']',sep=''),'beta','Smax',paste('Smsy[',seq(1:datm$L),']',sep=''),'sigma','sigma_a',paste('mu[',seq(1:datm$N),']',sep=''),paste('epsilon[',seq(1:datm$N),']',sep=''))
       
       ans<-list(data=data,
                 logalpha=c(aa$summary[paste('logalpha[',seq(1:datm$L),']',sep=''),"50%"]),
