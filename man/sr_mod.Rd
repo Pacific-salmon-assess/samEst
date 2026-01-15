@@ -7,7 +7,7 @@
 sr_mod(
   type = c("static", "rw", "hmm"),
   ac = FALSE,
-  par = c("n", "a", "b", "both"),
+  par = c("a", "b", "both"),
   modelcode = FALSE
 )
 }
