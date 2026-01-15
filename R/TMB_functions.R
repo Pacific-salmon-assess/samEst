@@ -63,9 +63,15 @@
 #' 
 ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), 
   tmb_map = list(), ac=FALSE, priors_flag=1, stan_flag=0,sig_p_sd=1,
-  Smax_mean=230000,Smax_sd=230000) {
-
-
+  Smax_mean=NULL,Smax_sd=NULL) {
+  
+  if(is.null(Smax_mean)==TRUE){
+    Smax_mean=0.5*max(data$S)
+  }
+  if(is.null(Smax_sd)==TRUE){
+    Smax_sd=2*max(data$S)
+  }
+  
   priorslogSmax<-log_prior_params(Smax_mean,Smax_sd)
   logsmax_p_mean=priorslogSmax$logsmax_pr_mean
   logsmax_p_sd=priorslogSmax$logsmax_pr_sig
@@ -217,10 +223,16 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' 
 ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
   control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, 
-  stan_flag=0, sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, Smax_mean=230000,Smax_sd=230000,
+  stan_flag=0, sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, Smax_mean=NULL,Smax_sd=NULL,
   AICc_type=c("conditional", "marginal")[1], deltaEDF=0.0001, newton_stp=TRUE,
   useEDF=FALSE) {
-
+ 
+    if(is.null(Smax_mean)==TRUE){
+      Smax_mean=0.5*max(data$S)
+    }
+    if(is.null(Smax_sd)==TRUE){
+      Smax_sd=2*max(data$S)
+    }
   ##Smax lognormal prior
   priorslogSmax<-log_prior_params(Smax_mean,Smax_sd)
   logsmax_p_mean=priorslogSmax$logsmax_pr_mean
@@ -502,10 +514,16 @@ ricker_hmm_TMB <- function(data,
                            stan_flag = 0,
                            sig_p_sd=1,
                            dirichlet_prior=NULL,
-                           Smax_mean=230000,
-                           Smax_sd=230000) {
+                           Smax_mean=NULL,
+                           Smax_sd=NULL) {
 
-
+    if(is.null(Smax_mean)==TRUE){
+      Smax_mean=0.5*max(data$S)
+    }
+    if(is.null(Smax_sd)==TRUE){
+      Smax_sd=2*max(data$S)
+    }
+  
   ##Smax lognormal prior
   priorslogSmax<-log_prior_params(Smax_mean,Smax_sd)
   logsmax_p_mean=priorslogSmax$logsmax_pr_mean

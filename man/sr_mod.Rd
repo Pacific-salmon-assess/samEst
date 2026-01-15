@@ -7,7 +7,7 @@
 sr_mod(
   type = c("static", "rw", "hmm"),
   ac = FALSE,
-  par = c("a", "b", "both"),
+  tv.par = c("a", "b", "both"),
   modelcode = FALSE
 )
 }
@@ -17,9 +17,9 @@ a time-varying 'rw' model, or a regime shift hidden Markov model 'hmm'}
 
 \item{ac}{TRUE or FALSE statement to include autocorrelated residuals. Only compatible with static model}
 
-\item{par}{For time-varying or regime S-R models, what parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters}
-
 \item{modelcode}{Logical indicating whether to output model_code or a stan_model object (FALSE, the default)}
+
+\item{par}{For time-varying or regime S-R models, what parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters}
 
 \item{lfo}{TRUE or FALSE statement that dictates whether model is being used for out-of-sample log-likelihood estimation}
 }

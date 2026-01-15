@@ -13,8 +13,8 @@ ricker_TMB(
   priors_flag = 1,
   stan_flag = 0,
   sig_p_sd = 1,
-  Smax_mean = 230000,
-  Smax_sd = 230000
+  Smax_mean = NULL,
+  Smax_sd = NULL
 )
 }
 \arguments{

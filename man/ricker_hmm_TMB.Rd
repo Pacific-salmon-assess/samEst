@@ -19,8 +19,8 @@ ricker_hmm_TMB(
   stan_flag = 0,
   sig_p_sd = 1,
   dirichlet_prior = NULL,
-  Smax_mean = 230000,
-  Smax_sd = 230000
+  Smax_mean = NULL,
+  Smax_sd = NULL
 )
 }
 \arguments{
