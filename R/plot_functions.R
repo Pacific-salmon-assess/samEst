@@ -12,7 +12,7 @@
 #' @examples
 #' sr_plot(type='static',df=df,form='stan',df=df,mod=f1,pdf=FALSE)
 
-static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.params=FALSE,resids=FALSE){
+static_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.params=FALSE,resids=FALSE){
   if(is.null(title)==T){title=''}
   if(resids==TRUE){
     par(mfrow=c(2,1));fig.pars=c(fig.pars[1],2*fig.pars[2])
@@ -20,19 +20,22 @@ static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.pa
   if(make.pdf==TRUE){
     pdf(paste(title,'_sr.pdf',sep=''),width=fig.pars[1],height=fig.pars[2])
   }
-  plot(df$R~df$S,xlim=c(0,max(df$S)),ylim=c(0,max(df$R)),type='n',bty='l',xlab='Spawners',ylab='Recruits',main=title)
+  data$R=data$R/1e3
+  data$S=data$S/1e3
+  
+  plot(data$R~data$S,xlim=c(0,max(data$S)),ylim=c(0,max(data$R)),type='n',bty='l',xlab='Spawners (thousands)',ylab='Recruits (thousands)',main=title)
   abline(c(0,1),lty=5)
 
   lines(x=rep(mod$Smax,2),y=c(-100,exp(mod$logalpha-mod$beta*mod$Smax)*mod$Smax),col='darkred',lwd=2)
   lines(x=rep(mod$Smsy,2),y=c(-100,exp(mod$logalpha-mod$beta*mod$Smsy)*mod$Smsy),col='navy',lwd=2)
-  x_n=seq(0,max(df$S))
+  x_n=seq(0,max(data$S))
   p_n=exp(mod$logalpha-mod$beta*x_n)*x_n
   
   lines(p_n~x_n,lwd=3,col=adjustcolor('black',alpha.f=0.8))
-  col.p=viridis::viridis(length(df$by))
-  lines(df$R~df$S,col=adjustcolor('black',alpha.f=0.2),lwd=0.5)
-  points(df$R~df$S,pch=21,bg=col.p,cex=1.5)
-  text(x=df$S-max(df$S)*0.01,y=df$R+max(df$R)*0.03,df$by,cex=0.7)
+  col.p=viridis::viridis(length(data$by))
+  lines(data$R~data$S,col=adjustcolor('black',alpha.f=0.2),lwd=0.5)
+  points(data$R~data$S,pch=21,bg=col.p,cex=1.5)
+  text(x=data$S-max(data$S)*0.01,y=data$R+max(data$R)*0.03,data$by,cex=0.7)
   
   if(plot.params==TRUE){
     text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.15,paste('log(a):',round(mod$logalpha,2),sep=' '),adj=0)
@@ -45,10 +48,10 @@ static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.pa
     }
   }
   if(resids==TRUE){
-    plot(mod$residuals~df$by,type='n',bty='l',xlab='Brood cohort year',ylab='Productivity residual')
+    plot(mod$residuals~data$by,type='n',bty='l',xlab='Brood cohort year',ylab='Productivity residual')
     abline(h=0,lty=5)
-    lines(mod$residuals~df$by,col=adjustcolor('black',alpha.f=0.2))
-    points(mod$residuals~df$by,pch=21,bg=col.p,cex=1.5)
+    lines(mod$residuals~data$by,col=adjustcolor('black',alpha.f=0.2))
+    points(mod$residuals~data$by,pch=21,bg=col.p,cex=1.5)
   }
   if(make.pdf==TRUE){
   dev.off()
@@ -56,34 +59,85 @@ static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.pa
   
 }
 
-rw_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=FALSE,freq.pred=3){
+rw_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=FALSE,freq.pred=3){
   if(is.null(title)==T){title=''}
+  if(sr.only==FALSE){par(mfrow=c(2,1))}
   if(sr.only==TRUE){fig.pars[2]=fig.pars[2]/2}
   if(make.pdf==TRUE){
     pdf(paste(title,'_rw_sr.pdf',sep=''),width=fig.pars[1],height=fig.pars[2])
   }
-  plot(df$R~df$S,xlim=c(0,max(df$S)),ylim=c(0,max(df$R)),type='n',bty='l',xlab='Spawners',ylab='Recruits',main=title)
-  abline(c(0,1),lty=5)
-  col.p=viridis::viridis(length(df$by))
-  lines(df$R~df$S,col=adjustcolor('black',alpha.f=0.2),lwd=0.5)
-  points(df$R~df$S,pch=21,bg=col.p,cex=1.5)
-  text(x=df$S-max(df$S)*0.01,y=df$R+max(df$R)*0.03,df$by,cex=0.7)
+  data$R=data$R/1e3
+  data$S=data$S/1e3
   
-  x_n=seq(0,max(df$S))
+  plot(data$R~data$S,xlim=c(0,max(data$S)),ylim=c(0,max(data$R)),type='n',bty='l',xlab='Spawners (thousands)',ylab='Recruits (thousands',main=title)
+  abline(c(0,1),lty=5)
+  col.p=viridis::viridis(length(data$by))
+  lines(data$R~data$S,col=adjustcolor('black',alpha.f=0.2),lwd=0.5)
+  points(data$R~data$S,pch=21,bg=col.p,cex=1.5)
+  text(x=data$S-max(data$S)*0.01,y=data$R+max(data$R)*0.03,data$by,cex=0.7)
+  
+  x_n=seq(0,max(data$S))
 
-  for(t in seq_along(1,nrow(df),by=freq.pred)){
+  for(t in seq(1,c(max(data$by)-min(data$by)+1),by=freq.pred)){
     if(length(mod$logalpha)>1){
       p_n=exp(mod$logalpha[t]-mod$beta*x_n)*x_n
     }else if(length(mod$Smax)>1){
       p_n=exp(mod$logalpha-mod$beta[t]*x_n)*x_n
     }
-      lines(p_n~x_n,lwd=w,col=adjustcolor(col.p[t],alpha.f=0.8))
+      lines(p_n~x_n,lwd=2,col=adjustcolor(col.p[t],alpha.f=0.8))
   }
   if(length(mod$logalpha)>1){
-  plot(mod$logalpha~seq(min(df$by),max(df$by)),type='n',bty='l',xlab='Brood cohort year',ylab=expression(paste('Productivity - log(', alpha['j,t'],')',sep=' ')))
-  abline(h=0,lty=5)
-  lines(mod$residuals~df$by,col=adjustcolor('black',alpha.f=0.2))
-  points(mod$residuals~df$by,pch=21,bg=col.p,cex=1.5)
+  plot(mod$logalpha~seq(min(data$by),max(data$by)),type='n',bty='l',xlab='Brood cohort year',ylab=expression(paste('Productivity - log(', alpha['j,t'],')',sep=' ')))
+  lines(mod$logalpha~data$by,col=adjustcolor('black',alpha.f=0.2))
+  points(mod$logalpha~data$by,pch=21,bg=col.p,cex=1.5)
+  }
+  if(length(mod$Smax)>1){
+    plot(mod$Smax~seq(min(data$by),max(data$by)),type='n',bty='l',xlab='Brood cohort year',ylab=expression(paste('Productivity - log(', alpha['j,t'],')',sep=' ')))
+    lines(mod$Smax~data$by,col=adjustcolor('black',alpha.f=0.2))
+    points(mod$Smax~data$by,pch=21,bg=col.p,cex=1.5)
+  }
+  if(make.pdf==TRUE){
+    dev.off()
+  }
+  
+}
+
+rw_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=FALSE,freq.pred=3){
+  if(is.null(title)==T){title=''}
+  if(sr.only==FALSE){par(mfrow=c(2,1))}
+  if(sr.only==TRUE){fig.pars[2]=fig.pars[2]/2}
+  if(make.pdf==TRUE){
+    pdf(paste(title,'_rw_sr.pdf',sep=''),width=fig.pars[1],height=fig.pars[2])
+  }
+  data$R=data$R/1e3
+  data$S=data$S/1e3
+  
+  plot(data$R~data$S,xlim=c(0,max(data$S)),ylim=c(0,max(data$R)),type='n',bty='l',xlab='Spawners (thousands)',ylab='Recruits (thousands',main=title)
+  abline(c(0,1),lty=5)
+  col.p=viridis::viridis(length(data$by))
+  lines(data$R~data$S,col=adjustcolor('black',alpha.f=0.2),lwd=0.5)
+  points(data$R~data$S,pch=21,bg=col.p,cex=1.5)
+  text(x=data$S-max(data$S)*0.01,y=data$R+max(data$R)*0.03,data$by,cex=0.7)
+  
+  x_n=seq(0,max(data$S))
+  
+  for(t in seq(1,c(max(data$by)-min(data$by)+1),by=freq.pred)){
+    if(length(mod$logalpha)>1){
+      p_n=exp(mod$logalpha[t]-mod$beta*x_n)*x_n
+    }else if(length(mod$Smax)>1){
+      p_n=exp(mod$logalpha-mod$beta[t]*x_n)*x_n
+    }
+    lines(p_n~x_n,lwd=2,col=adjustcolor(col.p[t],alpha.f=0.8))
+  }
+  if(length(mod$logalpha)>1){
+    plot(mod$logalpha~seq(min(data$by),max(data$by)),type='n',bty='l',xlab='Brood cohort year',ylab=expression(paste('Productivity - log(', alpha,')',sep=' ')))
+    lines(mod$logalpha~data$by,col=adjustcolor('black',alpha.f=0.2))
+    points(mod$logalpha~data$by,pch=21,bg=col.p,cex=1.5)
+  }
+  if(length(mod$Smax)>1){
+    plot(mod$Smax~seq(min(data$by),max(data$by)),type='n',bty='l',xlab='Brood cohort year',ylab='Smax')
+    lines(mod$Smax~data$by,col=adjustcolor('black',alpha.f=0.2))
+    points(mod$Smax~data$by,pch=21,bg=col.p,cex=1.5)
   }
   if(make.pdf==TRUE){
     dev.off()
