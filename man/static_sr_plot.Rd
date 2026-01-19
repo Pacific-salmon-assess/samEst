@@ -5,7 +5,7 @@
 \title{static.sr.plot function}
 \usage{
 static_sr_plot(
-  df,
+  data,
   mod,
   title = NULL,
   make.pdf = FALSE,
@@ -15,8 +15,6 @@ static_sr_plot(
 )
 }
 \arguments{
-\item{df}{stock-recruitment dataset. With columns R (recruits) and S (spawners) and by (brood year)}
-
 \item{mod}{a fitted Stan or TMB static model}
 
 \item{make.pdf}{TRUE or FALSE, indicating whether to create a pdf or not}
@@ -24,6 +22,8 @@ static_sr_plot(
 \item{plot.params}{TRUE or FALSE, indicating whether to plot Ricker parameter values onto the plot}
 
 \item{resids}{TRUE or FALSE, indicating whether to produce two plots with the spawner-recruit curve and the residuals of the fit over time}
+
+\item{df}{stock-recruitment dataset. With columns R (recruits) and S (spawners) and by (brood year)}
 }
 \value{
 returns the compiled rstan code for a given S-R model

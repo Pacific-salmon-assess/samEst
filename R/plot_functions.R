@@ -26,10 +26,12 @@ static_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.
   plot(data$R~data$S,xlim=c(0,max(data$S)),ylim=c(0,max(data$R)),type='n',bty='l',xlab='Spawners (thousands)',ylab='Recruits (thousands)',main=title)
   abline(c(0,1),lty=5)
 
-  lines(x=rep(mod$Smax,2),y=c(-100,exp(mod$logalpha-mod$beta*mod$Smax)*mod$Smax),col='darkred',lwd=2)
-  lines(x=rep(mod$Smsy,2),y=c(-100,exp(mod$logalpha-mod$beta*mod$Smsy)*mod$Smsy),col='navy',lwd=2)
-  x_n=seq(0,max(data$S))
+  lines(x=rep(mod$Smax/1e3,2),y=c(c(-100,exp(mod$logalpha-mod$beta*mod$Smax)*mod$Smax)/1e3),col='darkred',lwd=2)
+  lines(x=rep(mod$Smsy/1e3,2),y=c(c(-100,exp(mod$logalpha-mod$beta*mod$Smsy)*mod$Smsy)/1e3),col='navy',lwd=2)
+  x_n=seq(0,max(data$S)*1e3)
   p_n=exp(mod$logalpha-mod$beta*x_n)*x_n
+  p_n=p_n/1e3
+  x_n=x_n/1e3
   
   lines(p_n~x_n,lwd=3,col=adjustcolor('black',alpha.f=0.8))
   col.p=viridis::viridis(length(data$by))
@@ -109,6 +111,7 @@ rw_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=F
   if(make.pdf==TRUE){
     pdf(paste(title,'_rw_sr.pdf',sep=''),width=fig.pars[1],height=fig.pars[2])
   }
+  x_n=seq(0,max(data$S))
   data$R=data$R/1e3
   data$S=data$S/1e3
   
@@ -119,15 +122,13 @@ rw_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=F
   points(data$R~data$S,pch=21,bg=col.p,cex=1.5)
   text(x=data$S-max(data$S)*0.01,y=data$R+max(data$R)*0.03,data$by,cex=0.7)
   
-  x_n=seq(0,max(data$S))
-  
   for(t in seq(1,c(max(data$by)-min(data$by)+1),by=freq.pred)){
     if(length(mod$logalpha)>1){
       p_n=exp(mod$logalpha[t]-mod$beta*x_n)*x_n
     }else if(length(mod$Smax)>1){
       p_n=exp(mod$logalpha-mod$beta[t]*x_n)*x_n
     }
-    lines(p_n~x_n,lwd=2,col=adjustcolor(col.p[t],alpha.f=0.8))
+    lines(c(p_n/1e3)~c(x_n/1e3),lwd=2,col=adjustcolor(col.p[t],alpha.f=0.8))
   }
   if(length(mod$logalpha)>1){
     plot(mod$logalpha~seq(min(data$by),max(data$by)),type='n',bty='l',xlab='Brood cohort year',ylab=expression(paste('Productivity - log(', alpha,')',sep=' ')))
@@ -135,9 +136,9 @@ rw_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=F
     points(mod$logalpha~data$by,pch=21,bg=col.p,cex=1.5)
   }
   if(length(mod$Smax)>1){
-    plot(mod$Smax~seq(min(data$by),max(data$by)),type='n',bty='l',xlab='Brood cohort year',ylab='Smax')
-    lines(mod$Smax~data$by,col=adjustcolor('black',alpha.f=0.2))
-    points(mod$Smax~data$by,pch=21,bg=col.p,cex=1.5)
+    plot(mod$Smax/1e3~seq(min(data$by),max(data$by)),type='n',bty='l',xlab='Brood cohort year',ylab='Smax (thousands)')
+    lines(mod$Smax/1e3~data$by,col=adjustcolor('black',alpha.f=0.2))
+    points(mod$Smax/1e3~data$by,pch=21,bg=col.p,cex=1.5)
   }
   if(make.pdf==TRUE){
     dev.off()
