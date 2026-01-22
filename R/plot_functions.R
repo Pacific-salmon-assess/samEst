@@ -12,9 +12,9 @@
 #' @examples
 #' sr_plot(type='static',df=df,form='stan',df=df,mod=f1,pdf=FALSE)
 
-static_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.params=FALSE,resids=FALSE){
+static_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.params=FALSE,sr.only=FALSE){
   if(is.null(title)==T){title=''}
-  if(resids==TRUE){
+  if(sr.only==FALSE){
     par(mfrow=c(2,1));fig.pars=c(fig.pars[1],2*fig.pars[2])
   }
   if(make.pdf==TRUE){
@@ -49,7 +49,7 @@ static_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.
       text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.3,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.15,paste('rho:',round(mod$rho,2),sep=' '),adj=0)
     }
   }
-  if(resids==TRUE){
+  if(sr.only==FALSE){
     plot(mod$residuals~data$by,type='n',bty='l',xlab='Brood cohort year',ylab='Productivity residual')
     abline(h=0,lty=5)
     lines(mod$residuals~data$by,col=adjustcolor('black',alpha.f=0.2))
@@ -88,7 +88,7 @@ rw_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=F
     }
       lines(p_n~x_n,lwd=2,col=adjustcolor(col.p[t],alpha.f=0.8))
   }
-  if(sr_only==FALSE){
+  if(sr.only==FALSE){
   if(length(mod$logalpha)>1){
   plot(mod$logalpha~seq(min(data$by),max(data$by)),type='n',bty='l',xlab='Brood cohort year',ylab=expression(paste('Productivity - log(', alpha['j,t'],')',sep=' ')))
   lines(mod$logalpha~data$by,col=adjustcolor('black',alpha.f=0.2))
@@ -173,7 +173,7 @@ hmm_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=
   
 }
 
-sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb'),sr_only=FALSE){
+sr_plot_old=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb'),sr_only=FALSE){
   if(type=='static'){ #static====
     x_new=seq(0,max(df$S),length.out=200)
 

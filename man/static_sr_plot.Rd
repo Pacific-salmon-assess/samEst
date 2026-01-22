@@ -11,7 +11,7 @@ static_sr_plot(
   make.pdf = FALSE,
   fig.pars = c(6, 4),
   plot.params = FALSE,
-  resids = FALSE
+  sr.only = FALSE
 )
 }
 \arguments{
@@ -21,9 +21,9 @@ static_sr_plot(
 
 \item{plot.params}{TRUE or FALSE, indicating whether to plot Ricker parameter values onto the plot}
 
-\item{resids}{TRUE or FALSE, indicating whether to produce two plots with the spawner-recruit curve and the residuals of the fit over time}
-
 \item{df}{stock-recruitment dataset. With columns R (recruits) and S (spawners) and by (brood year)}
+
+\item{resids}{TRUE or FALSE, indicating whether to produce two plots with the spawner-recruit curve and the residuals of the fit over time}
 }
 \value{
 returns the compiled rstan code for a given S-R model
