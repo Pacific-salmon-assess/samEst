@@ -2,7 +2,8 @@
 #'
 #' @param data A list or data frame containing complete vectors for: brood year (by), Spawners (s) and log(Recruits/Spawners) (logRS) time series.
 #' @param ac Logical. Are residuals autocorrelated? Default is FALSE
-#' @param smax_priors User-specified smax priors, sampled from a normal distribution, should be formatted as: c(mean, sd). Defaults to mean = half maximum observed spawners, sd = max. observed spawners (from time series). 
+#' @param Smax_mean User-specified smax priors for mean, sampled from a normal distribution. Defaults to mean = half maximum observed spawners. 
+#' @param Smax_sd User-specified smax priors for std. deviation, sampled from a normal distribution. defaults to sd = 2x max. observed spawners (from time series)
 #' @param control output of stancontrol
 #' @param warmup To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
 #'  chain. The default is 200.
@@ -37,13 +38,13 @@
 #' data(harck)
 #' ricker_stan(data=harck)
 #' 
-ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL, control = stancontrol(adapt_delta=0.99), warmup=300, chains = 6, iter = 1000,...) {
+ricker_stan <- function(data,  ac=FALSE, Smax_mean=NULL,Smax_sd=NULL,mod=NULL, control = stancontrol(adapt_delta=0.99), warmup=300, chains = 6, iter = 1000,...) {
 
     if(is.null(mod)==T){
     sm=sr_mod(type='static',ac=ac)
   }else{sm=mod}
 
-  if(is.null(smax_priors)==TRUE){
+  if(is.null(Smax_mean)==TRUE){
     datm = list(N=nrow(data),
                 L=max(data$by)-min(data$by)+1,
                 ii=data$by-min(data$by)+1,
@@ -57,8 +58,8 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL, control = st
                   ii=data$by-min(data$by)+1,
                   R_S =data$logRS,
                   S=data$S,
-                  pSmax_mean=smax_priors[1],
-                  pSmax_sig=smax_priors[2])
+                  pSmax_mean=Smax_mean,
+                  pSmax_sig=Smax_sd)
     }
 
   fit<-rstan::sampling(sm, data=datm,
@@ -121,7 +122,8 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL, control = st
 #'
 #' @param data A list or data frame containing complete vectors for: brood year (by), Spawners (s) and log(Recruits/Spawners) (logRS) time series. Use sr_format for the correct column names. 
 #' @param tv.par Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters (both)
-#' @param smax_priors User-specified smax priors, sampled from a normal distribution, should be formatted as: c(mean, sd)
+#' @param Smax_mean User-specified smax priors for mean, sampled from a normal distribution. Defaults to mean = half maximum observed spawners. 
+#' @param Smax_sd User-specified smax priors for std. deviation, sampled from a normal distribution. defaults to sd = 2x max. observed spawners (from time series)
 #' @param control output of stancontrol
 #' @param warmup To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
 #'  chain. The default is 200.
@@ -155,7 +157,7 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL, control = st
 #' data(harck)
 #' ricker_rw_stan(data=harck)
 #' 
-ricker_rw_stan <- function(data, tv.par=c('a','b','both'),smax_priors=NULL,control = stancontrol(adapt_delta=0.99), mod=NULL,
+ricker_rw_stan <- function(data, tv.par=c('a','b','both'),Smax_mean=NULL,Smax_sd=NULL,control = stancontrol(adapt_delta=0.99), mod=NULL,
   warmup=300,  chains = 6, iter = 1000,...) {
   tv.par=match.arg(tv.par,choices=c('a','b','both'))
 
@@ -163,7 +165,7 @@ ricker_rw_stan <- function(data, tv.par=c('a','b','both'),smax_priors=NULL,contr
     sm=sr_mod(type='rw',tv.par=tv.par)
   }else{sm=mod}
   
-  if(is.null(smax_priors)==TRUE){
+  if(is.null(Smax_mean)==TRUE){
     datm = list(N=nrow(data),
                 L=max(data$by)-min(data$by)+1,
                 ii=data$by-min(data$by)+1,
@@ -178,8 +180,8 @@ ricker_rw_stan <- function(data, tv.par=c('a','b','both'),smax_priors=NULL,contr
                 ii=data$by-min(data$by)+1,
                 R_S =data$logRS,
                 S=data$S,
-                pSmax_mean=smax_priors[1],
-                pSmax_sig=smax_priors[2])
+                pSmax_mean=Smax_mean,
+                pSmax_sig=Smax_sd)
   }
   
   fit <- rstan::sampling(sm, data = datm,
@@ -266,7 +268,8 @@ ricker_rw_stan <- function(data, tv.par=c('a','b','both'),smax_priors=NULL,contr
 #' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
 #' @param par Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
 #' @param k_regime number of regimes in the model, default is 2
-#' @param smax_priors Options for custom Smax (capacity) priors - 2 values for the mean and the scale (variance). Defaults to mean = half maximum observed spawners, scale = max. observed spawners (from data) 
+#' @param Smax_mean User-specified smax priors for mean, sampled from a normal distribution. Defaults to mean = half maximum observed spawners. 
+#' @param Smax_sd User-specified smax priors for std. deviation, sampled from a normal distribution. defaults to sd = 2x max. observed spawners (from time series)
 #' @param control output of stancontrol
 #' @param warmup To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
 #'  chain. The default is 200.
@@ -298,7 +301,7 @@ ricker_rw_stan <- function(data, tv.par=c('a','b','both'),smax_priors=NULL,contr
 #' data(harck)
 #' ricker_hmm_stan(data=harck)
 #' 
-ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors=NULL,smax_dists=c('normal','lognormal','cauchy'), dirichlet_stasis_prior=2, full_posterior=FALSE,
+ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,Smax_mean=NULL,Smax_sd=NULL,smax_dists=c('normal','lognormal','cauchy'), dirichlet_stasis_prior=2, full_posterior=FALSE,
   control = stancontrol(), warmup=300,  chains = 6, iter = 1000, mod=NULL,...) {
 
   par=match.arg(tv.par,choices=c('a','b','both'))
@@ -310,7 +313,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors
     sm <-mod
   }
   
-  if(is.null(smax_priors)==TRUE){
+  if(is.null(Smax_mean)==TRUE){
     datm = list(N=nrow(data),
                 L=max(data$by)-min(data$by)+1,
                 ii=data$by-min(data$by)+1,
@@ -328,8 +331,8 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors
                 S=data$S,
                 K=k_regime,
                 alpha_dirichlet=dirichlet_prior,
-                pSmax_mean=smax_priors[1],
-                pSmax_sig=smax_priors[2])
+                pSmax_mean=Smax_mean,
+                pSmax_sig=Smax_sd)
   }
   
   #if(is.null(sm_ext)){

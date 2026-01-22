@@ -7,7 +7,8 @@
 ricker_rw_stan(
   data,
   tv.par = c("a", "b", "both"),
-  smax_priors = NULL,
+  Smax_mean = NULL,
+  Smax_sd = NULL,
   control = stancontrol(adapt_delta = 0.99),
   mod = NULL,
   warmup = 300,
@@ -21,7 +22,9 @@ ricker_rw_stan(
 
 \item{tv.par}{Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters (both)}
 
-\item{smax_priors}{User-specified smax priors, sampled from a normal distribution, should be formatted as: c(mean, sd)}
+\item{Smax_mean}{User-specified smax priors for mean, sampled from a normal distribution. Defaults to mean = half maximum observed spawners.}
+
+\item{Smax_sd}{User-specified smax priors for std. deviation, sampled from a normal distribution. defaults to sd = 2x max. observed spawners (from time series)}
 
 \item{control}{output of stancontrol}
 

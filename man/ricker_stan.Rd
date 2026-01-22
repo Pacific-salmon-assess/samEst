@@ -7,7 +7,8 @@
 ricker_stan(
   data,
   ac = FALSE,
-  smax_priors = NULL,
+  Smax_mean = NULL,
+  Smax_sd = NULL,
   mod = NULL,
   control = stancontrol(adapt_delta = 0.99),
   warmup = 300,
@@ -21,7 +22,9 @@ ricker_stan(
 
 \item{ac}{Logical. Are residuals autocorrelated? Default is FALSE}
 
-\item{smax_priors}{User-specified smax priors, sampled from a normal distribution, should be formatted as: c(mean, sd). Defaults to mean = half maximum observed spawners, sd = max. observed spawners (from time series).}
+\item{Smax_mean}{User-specified smax priors for mean, sampled from a normal distribution. Defaults to mean = half maximum observed spawners.}
+
+\item{Smax_sd}{User-specified smax priors for std. deviation, sampled from a normal distribution. defaults to sd = 2x max. observed spawners (from time series)}
 
 \item{control}{output of stancontrol}
 

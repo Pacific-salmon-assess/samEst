@@ -78,7 +78,7 @@ rw_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=F
   points(data$R~data$S,pch=21,bg=col.p,cex=1.5)
   text(x=data$S-max(data$S)*0.01,y=data$R+max(data$R)*0.03,data$by,cex=0.7)
   
-  x_n=seq(0,max(data$S))
+  x_n=seq(0,max(data$S*1e3))
 
   for(t in seq(1,c(max(data$by)-min(data$by)+1),by=freq.pred)){
     if(length(mod$logalpha)>1){
@@ -86,16 +86,16 @@ rw_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=F
     }else if(length(mod$Smax)>1){
       p_n=exp(mod$logalpha-mod$beta[t]*x_n)*x_n
     }
-      lines(p_n~x_n,lwd=2,col=adjustcolor(col.p[t],alpha.f=0.8))
+      lines(c(p_n/1e3)~c(x_n/1e3),lwd=2,col=adjustcolor(col.p[t],alpha.f=0.8))
   }
   if(sr.only==FALSE){
   if(length(mod$logalpha)>1){
-  plot(mod$logalpha~seq(min(data$by),max(data$by)),type='n',bty='l',xlab='Brood cohort year',ylab=expression(paste('Productivity - log(', alpha['j,t'],')',sep=' ')))
+  plot(mod$logalpha~seq(min(data$by),max(data$by)),type='n',bty='l',xlab='Brood cohort year',ylab=expression(paste('Productivity - log(', alpha['t'],')',sep=' ')))
   lines(mod$logalpha~data$by,col=adjustcolor('black',alpha.f=0.2))
   points(mod$logalpha~data$by,pch=21,bg=col.p,cex=1.5)
   }
   if(length(mod$Smax)>1){
-    plot(mod$Smax~seq(min(data$by),max(data$by)),type='n',bty='l',xlab='Brood cohort year',ylab=expression(paste('Productivity - log(', alpha['j,t'],')',sep=' ')))
+    plot(mod$Smax~seq(min(data$by),max(data$by)),type='n',bty='l',xlab='Brood cohort year',ylab=expression(paste('Productivity - log(', alpha['t'],')',sep=' ')))
     lines(mod$Smax~data$by,col=adjustcolor('black',alpha.f=0.2))
     points(mod$Smax~data$by,pch=21,bg=col.p,cex=1.5)
   }

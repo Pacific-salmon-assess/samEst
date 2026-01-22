@@ -8,7 +8,8 @@ ricker_hmm_stan(
   data,
   par = c("a", "b", "both"),
   k_regime = 2,
-  smax_priors = NULL,
+  Smax_mean = NULL,
+  Smax_sd = NULL,
   smax_dists = c("normal", "lognormal", "cauchy"),
   dirichlet_stasis_prior = 2,
   full_posterior = FALSE,
@@ -27,7 +28,9 @@ ricker_hmm_stan(
 
 \item{k_regime}{number of regimes in the model, default is 2}
 
-\item{smax_priors}{Options for custom Smax (capacity) priors - 2 values for the mean and the scale (variance). Defaults to mean = half maximum observed spawners, scale = max. observed spawners (from data)}
+\item{Smax_mean}{User-specified smax priors for mean, sampled from a normal distribution. Defaults to mean = half maximum observed spawners.}
+
+\item{Smax_sd}{User-specified smax priors for std. deviation, sampled from a normal distribution. defaults to sd = 2x max. observed spawners (from time series)}
 
 \item{control}{output of stancontrol}
 
