@@ -202,7 +202,20 @@ Type objective_function<Type>::operator() ()
   REPORT(pnll); 
   REPORT(epslogsmax_t); 
   REPORT(epslogalpha_t);
-   
+
+  ADREPORT(logalpha);
+  ADREPORT(logalpha_t);
+  ADREPORT(Smax);
+  ADREPORT(Smax_t);
+
+  ADREPORT(sigobs)
+  ADREPORT(siga)
+  ADREPORT(sigb)
+  
+  ADREPORT(umsy);
+  ADREPORT(Smsy);
+  
+
   return ans;
 }
 

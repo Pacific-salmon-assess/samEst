@@ -8,6 +8,7 @@
 devtools::document()
 
 
+
 devtools::load_all()
 
 
@@ -32,36 +33,13 @@ usethis::use_logo("man/figures/samEst_large.png")
 #combine simple and AR
 
 p <- ricker_TMB_deprecated(data=harck, priors_flag=1)
-p2 <- ricker_TMB(data=harck,Smax_mean=220000,Smax_sd=230000, priors_flag=1)
+p <- ricker_TMB(data=harck, priors_flag=1)
 
 
+p <- ricker_TMB(data=harck, priors_flag=1)
+p$sd_report$value
+p$sd_report$sd
 
-
-p$Smax
-p2$Smax
-
-
-p$logalpha   
-p2$logalpha
-
-p$beta
-p2$beta
-
-
-    
-p$sig      
-p2$sigma     
-p2$sigma_noar
-
-p$Smsy
-p2$Smsy
-
-p$umsy
-p2$umsy
-           
-    
-p$rho   
-p2$rho
 
 pac<-ricker_TMB(data=harck, AC=TRUE)
 pac2<-ricker_TMB2(data=harck, AC=TRUE)
@@ -96,6 +74,9 @@ pac2$rho
 
 
 ptva <- ricker_rw_TMB(data=harck,tv.par="a", Smax_mean=250000,Smax_sd=200000)
+ptva$sd_report$value
+ptva$sd_report$sd
+
 
 ptva2 <- ricker_rw_TMB_logb(data=harck,tv.par="a")
 
