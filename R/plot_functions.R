@@ -154,7 +154,7 @@ hmm_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=
   }
   if(sr.only==FALSE){
     if(nrow(mod$probregime)==2){
-    plot(mod$probregime[1,]~seq(min(data$by),max(data$by)),bty='l',xlab='Brood cohort year',ylab='Probability of regime 2',type='n',ylim=c(0,1))
+    plot(mod$probregime[1,]~seq(min(data$by),max(data$by)),bty='l',xlab='Brood cohort year',ylab='Probability of higher regime',type='n',ylim=c(0,1))
       lines(mod$probregime[2,]~seq(min(data$by),max(data$by)),col=adjustcolor(col.p,alpha.f=0.8),lwd=2)
       points(mod$probregime[2,]~seq(min(data$by),max(data$by)),pch=21,bg=col.p,cex=1.5)
     }
