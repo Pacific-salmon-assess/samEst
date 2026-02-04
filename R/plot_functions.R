@@ -95,7 +95,7 @@ rw_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=F
   points(mod$logalpha~data$by,pch=21,bg=col.p,cex=1.5)
   }
   if(length(mod$Smax)>1){
-    plot(mod$Smax~seq(min(data$by),max(data$by)),type='n',bty='l',xlab='Brood cohort year',ylab=expression(paste('Productivity - log(', alpha['t'],')',sep=' ')))
+    plot(mod$Smax~seq(min(data$by),max(data$by)),type='n',bty='l',xlab='Brood cohort year',ylab='Smax')
     lines(mod$Smax~data$by,col=adjustcolor('black',alpha.f=0.2))
     points(mod$Smax~data$by,pch=21,bg=col.p,cex=1.5)
   }
