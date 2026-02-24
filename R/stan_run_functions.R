@@ -25,8 +25,8 @@
 #' * rho - median estimates for the rho parameter 
 #' * residuals - median estimates for each epsilon (residual) parameter      
 #' * summary - summary of stan model fit
-#' * full_posterior - all posterior samples of the above parameters 
-#' * stanfit - the stanfit model object
+#' * posterior - all posterior samples of the above parameters 
+#' * stanfit - the entire stanfit model object
 #' 
 #' 
 #' @importFrom rstan stan extract summary sampling
@@ -38,7 +38,7 @@
 #' data(harck)
 #' ricker_stan(data=harck)
 #' 
-ricker_stan <- function(data,  ac=FALSE, Smax_mean=NULL,Smax_sd=NULL,mod=NULL, control = stancontrol(adapt_delta=0.99), warmup=300, chains = 6, iter = 1000,...) {
+ricker_stan <- function(data,  ac=FALSE, Smax_mean=NULL,Smax_sd=NULL,mod=NULL, control = stancontrol(adapt_delta=0.999), warmup=300, chains = 6, iter = 1000,...) {
 
     if(is.null(mod)==T){
     sm=sr_mod(type='static',ac=ac)
@@ -88,7 +88,7 @@ ricker_stan <- function(data,  ac=FALSE, Smax_mean=NULL,Smax_sd=NULL,mod=NULL, c
                  rho=NA,
                  residuals=apply(mc2[,grepl('epsilon',colnames(mc2))],2,median),
                  summary=aa$summary,
-                 full_posterior=mc2,
+                 posterior=mc2,
                  stanfit=fit)
      }
     if(ac==TRUE){
@@ -102,7 +102,7 @@ ricker_stan <- function(data,  ac=FALSE, Smax_mean=NULL,Smax_sd=NULL,mod=NULL, c
                 rho=c(aa$summary["rho","50%"]),
                 residuals=apply(mc2[,grepl('epsilon',colnames(mc2))],2,median),
                 summary=aa$summary,
-                full_posterior=mc2,
+                posterior=mc2,
                 stanfit=fit)
     }
     
@@ -144,7 +144,7 @@ ricker_stan <- function(data,  ac=FALSE, Smax_mean=NULL,Smax_sd=NULL,mod=NULL, c
 #' * sigma_b - median estimates for the sigma_b parameter (variance attributed to random walk in Smax) 
 #' * residuals - median estimates for each epsilon (residual) parameter      
 #' * summary - summary of stan model fit
-#' * full_posterior - all posterior samples of the above parameters 
+#' * posterior - all posterior samples of the above parameters 
 #' * stanfit - the stanfit model object
 #' 
 #' 
@@ -157,7 +157,7 @@ ricker_stan <- function(data,  ac=FALSE, Smax_mean=NULL,Smax_sd=NULL,mod=NULL, c
 #' data(harck)
 #' ricker_rw_stan(data=harck)
 #' 
-ricker_rw_stan <- function(data, tv.par=c('a','b','both'),Smax_mean=NULL,Smax_sd=NULL,control = stancontrol(adapt_delta=0.99), mod=NULL,
+ricker_rw_stan <- function(data, tv.par=c('a','b','both'),Smax_mean=NULL,Smax_sd=NULL,control = stancontrol(adapt_delta=0.999), mod=NULL,
   warmup=300,  chains = 6, iter = 1000,...) {
   tv.par=match.arg(tv.par,choices=c('a','b','both'))
 
@@ -191,25 +191,21 @@ ricker_rw_stan <- function(data, tv.par=c('a','b','both'),Smax_mean=NULL,Smax_sd
   aa <- rstan::summary(fit)
   
     if(tv.par=='a'){
-      mc <- rstan::extract(fit,pars=c('logalpha','beta','Smax','Smsy','sigma','sigma_a','mu','epsilon'),permuted=T) 
+      mc <- rstan::extract(fit,pars=c('logalpha','beta','Smax','Smsy','Umsy','sigma','sigma_a','mu','epsilon'),permuted=T) 
       mc2=as.data.frame(do.call(cbind,mc))
-      colnames(mc2)=c(paste('logalpha[',seq(1:datm$L),']',sep=''),'beta','Smax',paste('Smsy[',seq(1:datm$L),']',sep=''),'sigma','sigma_a',paste('mu[',seq(1:datm$N),']',sep=''),paste('epsilon[',seq(1:datm$N),']',sep=''))
-      Umsy=unname(apply(mc2[,grepl('logalpha',colnames(mc2))],1:2,umsyCalc))
-      Umsy=ifelse(Umsy<0,0,Umsy)
-      colnames(Umsy)=paste('Umsy[',seq(1:ncol(Umsy)),']',sep='')
-      mc2=cbind(mc2,Umsy)
+      colnames(mc2)=c(paste('logalpha[',seq(1:datm$L),']',sep=''),'beta','Smax',paste('Smsy[',seq(1:datm$L),']',sep=''),paste('Umsy[',seq(1:datm$L),']',sep=''),'sigma','sigma_a',paste('mu[',seq(1:datm$N),']',sep=''),paste('epsilon[',seq(1:datm$N),']',sep=''))
         
       ans<-list(data=data,
                 logalpha=c(aa$summary[paste('logalpha[',seq(1:datm$L),']',sep=''),"50%"]),
                 beta=c(aa$summary["beta","50%"]),
                 Smax=c(aa$summary["Smax","50%"]),
                 Smsy=c(aa$summary[paste('Smsy[',seq(1:datm$L),']',sep=''),"50%"]),
-                Umsy=apply(Umsy,2,median),
+                Umsy=c(aa$summary[paste('Umsy[',seq(1:datm$L),']',sep=''),"50%"]),
                 sigma=c(aa$summary["sigma","50%"]),
                 sigma_a=c(aa$summary["sigma_a","50%"]),
                 residuals=apply(mc2[,grepl('epsilon',colnames(mc2))],2,median),
                 summary=aa$summary,
-                full_posterior=mc2,
+                posterior=mc2,
                 stanfit=fit)
     
     }
@@ -228,16 +224,13 @@ ricker_rw_stan <- function(data, tv.par=c('a','b','both'),Smax_mean=NULL,Smax_sd
                 sigma_b=c(aa$summary["sigma_b","50%"]),
                 residuals=apply(mc2[,grepl('epsilon',colnames(mc2))],2,median),
                 summary=aa$summary,
-                full_posterior=mc2,
+                posterior=mc2,
                 stanfit=fit)
      }
     if(tv.par=='both'){
-      mc <- rstan::extract(fit,pars=c('logalpha','beta','Smax','Smsy','sigma','sigma_a','sigma_b','mu','epsilon'),permuted=T) 
+      mc <- rstan::extract(fit,pars=c('logalpha','beta','Smax','Smsy','Umsy','sigma','sigma_a','sigma_b','mu','epsilon'),permuted=T) 
       mc2=as.data.frame(do.call(cbind,mc))
-      colnames(mc2)=c(paste('logalpha[',seq(1:datm$L),']',sep=''),paste('beta[',seq(1:datm$L),']',sep=''),paste('Smax[',seq(1:datm$L),']',sep=''),paste('Smsy[',seq(1:datm$L),']',sep=''),'sigma','sigma_a','sigma_b',paste('mu[',seq(1:datm$N),']',sep=''),paste('epsilon[',seq(1:datm$N),']',sep=''))
-      Umsy=unname(apply(mc2[,grepl('logalpha',colnames(mc2))],1:2,umsyCalc))
-      Umsy=ifelse(Umsy<0,0,Umsy)
-      colnames(Umsy)=paste('Umsy[',seq(1:ncol(Umsy)),']',sep='')
+      colnames(mc2)=c(paste('logalpha[',seq(1:datm$L),']',sep=''),paste('beta[',seq(1:datm$L),']',sep=''),paste('Smax[',seq(1:datm$L),']',sep=''),paste('Smsy[',seq(1:datm$L),']',sep=''),paste('Umsy[',seq(1:datm$L),']',sep=''),'sigma','sigma_a','sigma_b',paste('mu[',seq(1:datm$N),']',sep=''),paste('epsilon[',seq(1:datm$N),']',sep=''))
       mc2=cbind(mc2,Umsy)
       
       ans<-list(data=data,
@@ -245,13 +238,13 @@ ricker_rw_stan <- function(data, tv.par=c('a','b','both'),Smax_mean=NULL,Smax_sd
            beta=c(aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"50%"]),
            Smax=c(aa$summary[paste('Smax[',seq(1:datm$L),']',sep=''),"50%"]),
            Smsy=c(aa$summary[paste('Smsy[',seq(1:datm$L),']',sep=''),"50%"]),
-           Umsy=apply(Umsy,2,median),
+           Umsy=c(aa$summary[paste('Umsy[',seq(1:datm$L),']',sep=''),"50%"]),
            sigma=c(aa$summary["sigma","50%"]),
            sigma_a=c(aa$summary["sigma_a","50%"]),
            sigma_b=c(aa$summary["sigma_b","50%"]),
            residuals=apply(mc2[,grepl('epsilon',colnames(mc2))],2,median),
            summary=aa$summary,
-           full_posterior=mc2,
+           posterior=mc2,
            stanfit=fit)
       
     }
@@ -301,8 +294,8 @@ ricker_rw_stan <- function(data, tv.par=c('a','b','both'),Smax_mean=NULL,Smax_sd
 #' data(harck)
 #' ricker_hmm_stan(data=harck)
 #' 
-ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,Smax_mean=NULL,Smax_sd=NULL,smax_dists=c('normal','lognormal','cauchy'), dirichlet_stasis_prior=2, full_posterior=FALSE,
-  control = stancontrol(), warmup=300,  chains = 6, iter = 1000, mod=NULL,...) {
+ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,Smax_mean=NULL,Smax_sd=NULL,smax_dists=c('normal','lognormal','cauchy'), dirichlet_stasis_prior=2,
+  control = stancontrol(adapt_delta=0.999), warmup=300,  chains = 6, iter = 1000, mod=NULL,...) {
 
   par=match.arg(tv.par,choices=c('a','b','both'))
   dirichlet_prior<-matrix(c(dirichlet_stasis_prior,1,1,dirichlet_stasis_prior),nrow=k_regime,ncol=k_regime)
@@ -372,7 +365,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,Smax_mean=NU
    probregime =matrix(aa$summary[grep("gamma\\[",row.names(aa$summary)),"50%"],ncol=k_regime, byrow=T),
    regime = aa$summary[grep("^zstar",row.names(aa$summary)),"50%"],
    summary=aa$summary,
-   full_posterior=mc,
+   posterior=mc,
    stanfit=fit) 
 
   

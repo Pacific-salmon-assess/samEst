@@ -55,8 +55,11 @@ model{
 generated quantities{
  real Umsy;
  real Smsy;
-vector[N] y_rep;
- 
+ real prior_Smax;
+ vector[N] y_rep;
+
+prior_Smax = normal_rng(pSmax_mean,pSmax_sig);
+
 Umsy = 1-lambert_w0(exp(1-logalpha));
 Smsy = (1-lambert_w0(exp(1-logalpha)))/beta;
 for(n in 1:N) y_rep[n]=normal_rng(mu[n],sigma);
@@ -124,8 +127,10 @@ model{
 generated quantities{
   real Umsy;
   real Smsy;
+  real prior_Smax;
   vector[N] y_rep;
- 
+
+ prior_Smax = normal_rng(pSmax_mean,pSmax_sig);
 
  Umsy = 1-lambert_w0(exp(1-logalpha));
  Smsy = (1-lambert_w0(exp(1-logalpha)))/beta;
@@ -190,16 +195,21 @@ model{
   
   //variance terms
   sigma_tot ~ gamma(2,1); //half normal on variance (lower limit of zero)
-  F_rw ~ beta(2,4); //fraction attributed to random walk in productivity  
+  F_rw ~beta(2,5); //fraction attributed to random walk in productivity  
  
   R_S ~ normal(mu, sigma); 
 }
  generated quantities{
-     vector[L] Smsy;
+    vector[L] Smsy;
+    vector[L] Umsy;
     vector[N] y_rep;
+    real prior_Smax;
+
+  prior_Smax = normal_rng(pSmax_mean,pSmax_sig);
     
     for(l in 1:L){
     Smsy[l] = (1-lambert_w0(exp(1-logalpha[l])))/beta;
+    Umsy[l] = (1-lambert_w0(exp(1-logalpha[l])));
     }
     for(n in 1:N) y_rep[n]=normal_rng(logalpha[ii[n]] - beta*S[n],sigma);
 }
@@ -262,7 +272,7 @@ model{
 
   //variance terms
   sigma_tot ~ gamma(2,1);
-  F_rw ~ beta(2,4); //fraction attributed to random walk in productivity   
+  F_rw ~ beta(2,5); //fraction attributed to random walk in productivity   
  
   b_dev ~ std_normal();
   R_S ~ normal(mu, sigma);
@@ -347,12 +357,17 @@ model{
 }
  generated quantities{
      vector[L] Smsy;
+     vector[L] Umsy;
      vector[N] y_rep;
+     real prior_Smax;
+
+ prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
   
    for(n in 1:N) y_rep[n]=normal_rng(logalpha[ii[n]] - beta[ii[n]]*S[n],sigma);
 
    for(l in 1:L){
     Smsy[l] = (1-lambert_w0(exp(1-logalpha[l])))/beta[l];
+    Umsy[l] = (1-lambert_w0(exp(1-logalpha[l])));
    }
 }
 
@@ -502,7 +517,6 @@ prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
   }
   }
 
-real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
 
 for(n in 1:N) y_rep[n]=normal_rng(logalpha[zstar[n]] - S[n]*beta, sigma);
 
@@ -636,13 +650,13 @@ array[N,K] int bpointer; // backpointer to the most likely previous state on the
 array[N,K] real delta; // max prob for the sequence up to t
 // that ends with an emission from state k
 for (j in 1:K)
-delta[1, K] = normal_lpdf(R_S[1] | logalpha - b[j]*S[1], sigma);
+delta[1, K] = normal_lpdf(R_S[1] | logalpha - beta[j]*S[1], sigma);
 for (t in 2:N) {
 for (j in 1:K) { // j = current (t)
 delta[t, j] = negative_infinity();
 for (i in 1:K) { // i = previous (t-1)
 real logp;
-logp = delta[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] | logalpha - b[j]*S[t], sigma);
+logp = delta[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] | logalpha - beta[j]*S[t], sigma);
 if (logp > delta[t, j]) {
 bpointer[t, j] = i;
 delta[t, j] = logp;
@@ -659,12 +673,12 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
 }
 
-for(n in 1:N) y_rep[n]=normal_rng(logalpha - S[n]*b[zstar[n]], sigma);
+for(n in 1:N) y_rep[n]=normal_rng(logalpha - S[n]*beta[zstar[n]], sigma);
 
-U_msy= 1-lambert_w0(exp(1-logalpha));
+Umsy= 1-lambert_w0(exp(1-logalpha));
 
 for(k in 1:K){
-Smsy[k] = (1-lambert_w0(exp(1-logalpha)))/b[k];
+Smsy[k] = (1-lambert_w0(exp(1-logalpha)))/beta[k];
 }
 
 }

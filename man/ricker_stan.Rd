@@ -10,7 +10,7 @@ ricker_stan(
   Smax_mean = NULL,
   Smax_sd = NULL,
   mod = NULL,
-  control = stancontrol(adapt_delta = 0.99),
+  control = stancontrol(adapt_delta = 0.999),
   warmup = 300,
   chains = 6,
   iter = 1000,
@@ -51,8 +51,8 @@ a list containing the
 \item rho - median estimates for the rho parameter
 \item residuals - median estimates for each epsilon (residual) parameter
 \item summary - summary of stan model fit
-\item full_posterior - all posterior samples of the above parameters
-\item stanfit - the stanfit model object
+\item posterior - all posterior samples of the above parameters
+\item stanfit - the entire stanfit model object
 }
 }
 \description{

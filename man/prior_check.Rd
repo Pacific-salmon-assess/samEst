@@ -7,7 +7,7 @@
 prior_check(
   data,
   type = c("static", "rw"),
-  AC = FALSE,
+  ac = FALSE,
   par = c("a", "b", "both"),
   control = stancontrol()
 )

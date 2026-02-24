@@ -9,7 +9,7 @@ ricker_rw_stan(
   tv.par = c("a", "b", "both"),
   Smax_mean = NULL,
   Smax_sd = NULL,
-  control = stancontrol(adapt_delta = 0.99),
+  control = stancontrol(adapt_delta = 0.999),
   mod = NULL,
   warmup = 300,
   chains = 6,
@@ -52,7 +52,7 @@ a list containing the
 \item sigma_b - median estimates for the sigma_b parameter (variance attributed to random walk in Smax)
 \item residuals - median estimates for each epsilon (residual) parameter
 \item summary - summary of stan model fit
-\item full_posterior - all posterior samples of the above parameters
+\item posterior - all posterior samples of the above parameters
 \item stanfit - the stanfit model object
 }
 }
