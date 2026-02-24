@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_functions.R
 \name{static_sr_plot}
 \alias{static_sr_plot}
-\title{static.sr.plot function}
+\title{static_sr_plot function}
 \usage{
 static_sr_plot(
   data,
@@ -10,27 +10,31 @@ static_sr_plot(
   title = NULL,
   make.pdf = FALSE,
   fig.pars = c(6, 4),
-  plot.params = FALSE,
+  plot.params = TRUE,
   sr.only = FALSE
 )
 }
 \arguments{
+\item{data}{stock-recruitment dataset. With columns R (recruits) and S (spawners) and by (brood year)}
+
 \item{mod}{a fitted Stan or TMB static model}
 
-\item{make.pdf}{TRUE or FALSE, indicating whether to create a pdf or not}
+\item{title}{optional title for plot}
 
-\item{plot.params}{TRUE or FALSE, indicating whether to plot Ricker parameter values onto the plot}
+\item{make.pdf}{TRUE or FALSE, indicating whether to create a pdf or not, default is FALSE}
 
-\item{df}{stock-recruitment dataset. With columns R (recruits) and S (spawners) and by (brood year)}
+\item{plot.params}{TRUE or FALSE, indicating whether to plot Ricker parameter values onto the plot, default is TRUE}
 
-\item{resids}{TRUE or FALSE, indicating whether to produce two plots with the spawner-recruit curve and the residuals of the fit over time}
+\item{sr.only}{TRUE or FALSE, indicating whether to produce just the S-R curve rather than two plots with the spawner-recruit curve and the residuals of the fit over time, default is FALSE}
 }
 \value{
-returns the compiled rstan code for a given S-R model
+returns the specified plot(s)
 }
 \description{
-This function generates a stock-recruitment (S-R) model for rstan based on model inputs.
+This function plots a spawner-recruit curve relative to specified spawner-recruit data, and residuals through time, based on a TMB or Stan static model fit from samEst.
 }
 \examples{
-sr_plot(type='static',df=df,form='stan',df=df,mod=f1,pdf=FALSE)
+data(harck)
+fit=ricker_TMB(data=harck)
+static_sr_plot(data=harck,mod=fit,title='Harrison Chinook',plot.params=TRUE)
 }

@@ -1,18 +1,20 @@
-#' static.sr.plot function
+#' static_sr_plot function
 #'
-#' This function generates a stock-recruitment (S-R) model for rstan based on model inputs.
-#' @param df stock-recruitment dataset. With columns R (recruits) and S (spawners) and by (brood year)
+#' This function plots a spawner-recruit curve relative to specified spawner-recruit data, and residuals through time, based on a TMB or Stan static model fit from samEst.
+#' @param data stock-recruitment dataset. With columns R (recruits) and S (spawners) and by (brood year)
 #' @param mod a fitted Stan or TMB static model
-#' @param make.pdf TRUE or FALSE, indicating whether to create a pdf or not
-#' @param plot.params TRUE or FALSE, indicating whether to plot Ricker parameter values onto the plot
-#' @param resids TRUE or FALSE, indicating whether to produce two plots with the spawner-recruit curve and the residuals of the fit over time
-#' @return returns the compiled rstan code for a given S-R model
-#' @importFrom rstan stan_model
+#' @param title optional title for plot
+#' @param make.pdf TRUE or FALSE, indicating whether to create a pdf or not, default is FALSE
+#' @param plot.params TRUE or FALSE, indicating whether to plot Ricker parameter values onto the plot, default is TRUE
+#' @param sr.only TRUE or FALSE, indicating whether to produce just the S-R curve rather than two plots with the spawner-recruit curve and the residuals of the fit over time, default is FALSE
+#' @return returns the specified plot(s)
 #' @export
 #' @examples
-#' sr_plot(type='static',df=df,form='stan',df=df,mod=f1,pdf=FALSE)
+#' data(harck)
+#' fit=ricker_TMB(data=harck)
+#' static_sr_plot(data=harck,mod=fit,title='Harrison Chinook',plot.params=TRUE)
 
-static_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.params=FALSE,sr.only=FALSE){
+static_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.params=TRUE,sr.only=FALSE){
   if(is.null(title)==T){title=''}
   if(sr.only==FALSE){
     par(mfrow=c(2,1));fig.pars=c(fig.pars[1],2*fig.pars[2])
@@ -61,6 +63,22 @@ static_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.
   
 }
 
+#' rw_sr_plot function
+#'
+#' This function plots a time-varying spawner-recruit curves relative to specified spawner-recruit data based on a TMB or Stan 'random walk' model fit from samEst.
+#' @param data stock-recruitment dataset. With columns R (recruits) and S (spawners) and by (brood year)
+#' @param mod a fitted Stan or TMB static model
+#' @param title optional title for plot
+#' @param make.pdf TRUE or FALSE, indicating whether to create a pdf or not, default is FALSE
+#' @param sr.only TRUE or FALSE, indicating whether to produce just the S-R curve rather than two plots with the spawner-recruit curve and the trajectory of the time-varying parameter (log(alpha) or Smax), default is FALSE
+#' @param freq.pred frequency of the predicted S-R curve through time. Default = 3, plot a unique curve for every 3 years.
+#' @return returns the specified plot(s)
+#' @export
+#' @examples
+#' data(harck)
+#' fit=ricker_rw_TMB(data=harck,tv.par='a')
+#' rw_sr_plot(data=harck,mod=fit,title='Harrison Chinook')
+
 rw_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=FALSE,freq.pred=3){
   if(is.null(title)==T){title=''}
   if(sr.only==FALSE){par(mfrow=c(2,1))}
@@ -105,6 +123,21 @@ rw_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=F
   }
   
 }
+
+#' rw_sr_plot function
+#'
+#' This function plots regime shift spawner-recruit curves relative to specified spawner-recruit data based on a TMB or Stan 'hidden Markov' model fit from samEst.
+#' @param data stock-recruitment dataset. With columns R (recruits) and S (spawners) and by (brood year)
+#' @param mod a fitted Stan or TMB static model
+#' @param title optional title for plot
+#' @param make.pdf TRUE or FALSE, indicating whether to create a pdf or not, default is FALSE
+#' @param sr.only TRUE or FALSE, indicating whether to produce just the S-R curve rather than two plots with the spawner-recruit curve and the probability of each regime through time, default is FALSE
+#' @return returns the specified plot(s)
+#' @export
+#' @examples
+#' data(harck)
+#' fit=ricker_hmm_TMB(data=harck,tv.par='a')
+#' hmm_sr_plot(data=harck,mod=fit,title='Harrison Chinook')
 
 hmm_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=FALSE){
   if(is.null(title)==T){title=''}
