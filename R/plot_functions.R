@@ -1,53 +1,61 @@
-#' static.sr.plot function
+#' static_sr_plot function
 #'
-#' This function generates a stock-recruitment (S-R) model for rstan based on model inputs.
-#' @param df stock-recruitment dataset. With columns R (recruits) and S (spawners) and by (brood year)
+#' This function plots a spawner-recruit curve relative to specified spawner-recruit data, and residuals through time, based on a TMB or Stan static model fit from samEst.
+#' @param data stock-recruitment dataset. With columns R (recruits) and S (spawners) and by (brood year)
 #' @param mod a fitted Stan or TMB static model
-#' @param make.pdf TRUE or FALSE, indicating whether to create a pdf or not
-#' @param plot.params TRUE or FALSE, indicating whether to plot Ricker parameter values onto the plot
-#' @param resids TRUE or FALSE, indicating whether to produce two plots with the spawner-recruit curve and the residuals of the fit over time
-#' @return returns the compiled rstan code for a given S-R model
-#' @importFrom rstan stan_model
+#' @param title optional title for plot
+#' @param make.pdf TRUE or FALSE, indicating whether to create a pdf or not, default is FALSE
+#' @param plot.params TRUE or FALSE, indicating whether to plot Ricker parameter values onto the plot, default is TRUE
+#' @param sr.only TRUE or FALSE, indicating whether to produce just the S-R curve rather than two plots with the spawner-recruit curve and the residuals of the fit over time, default is FALSE
+#' @return returns the specified plot(s)
 #' @export
 #' @examples
-#' sr_plot(type='static',df=df,form='stan',df=df,mod=f1,pdf=FALSE)
+#' data(harck)
+#' fit=ricker_TMB(data=harck)
+#' static_sr_plot(data=harck,mod=fit,title='Harrison Chinook',plot.params=TRUE)
 
-static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.params=FALSE,resids=FALSE){
+static_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.params=TRUE,sr.only=FALSE){
   if(is.null(title)==T){title=''}
-  if(resids==TRUE){
+  if(sr.only==FALSE){
     par(mfrow=c(2,1));fig.pars=c(fig.pars[1],2*fig.pars[2])
   }
   if(make.pdf==TRUE){
     pdf(paste(title,'_sr.pdf',sep=''),width=fig.pars[1],height=fig.pars[2])
   }
-  plot(df$R~df$S,xlim=c(0,max(df$S)),ylim=c(0,max(df$R)),type='n',bty='l',xlab='Spawners',ylab='Recruits',main=title)
+  data$R=data$R/1e3
+  data$S=data$S/1e3
+  
+  plot(data$R~data$S,xlim=c(0,max(data$S)),ylim=c(0,max(data$R)),type='n',bty='l',xlab='Spawners (thousands)',ylab='Recruits (thousands)',main=title)
   abline(c(0,1),lty=5)
 
-  lines(x=rep(mod$Smax,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smax)*mod$Smax),col='darkred',lwd=2)
-  lines(x=rep(mod$Smsy,2),y=c(0,exp(mod$logalpha-mod$beta*mod$Smsy)*mod$Smsy),col='navy',lwd=2)
-  x_n=seq(0,max(df$S))
+  lines(x=rep(mod$Smax/1e3,2),y=c(c(-100,exp(mod$logalpha-mod$beta*mod$Smax)*mod$Smax)/1e3),col='darkred',lwd=2)
+  lines(x=rep(mod$Smsy/1e3,2),y=c(c(-100,exp(mod$logalpha-mod$beta*mod$Smsy)*mod$Smsy)/1e3),col='navy',lwd=2)
+  x_n=seq(0,max(data$S)*1e3)
+  p_n=exp(mod$logalpha-mod$beta*x_n)*x_n
+  p_n=p_n/1e3
+  x_n=x_n/1e3
   
   lines(p_n~x_n,lwd=3,col=adjustcolor('black',alpha.f=0.8))
-  col.p=viridis::viridis(length(d$by))
-  lines(df$R~df$S,col=adjustcolor('black',alpha.f=0.2),lwd=0.5)
-  points(df$R~df$S,pch=21,bg=col.p,cex=1.5)
-  text(x=df$S-max(df$S)*0.01,y=df$R+max(df$R)*0.03,df$by,cex=0.7)
+  col.p=viridis::viridis(length(data$by))
+  lines(data$R~data$S,col=adjustcolor('black',alpha.f=0.2),lwd=0.5)
+  points(data$R~data$S,pch=21,bg=col.p,cex=1.5)
+  text(x=data$S-max(data$S)*0.01,y=data$R+max(data$R)*0.03,data$by,cex=0.7)
   
   if(plot.params==TRUE){
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]*0.01,paste('log(a):',round(mod$logalpha,2),sep=' '),adj=0)
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.1,x=par('usr')[2]*0.01,paste('Smax:',round(mod$Smax),sep=' '),adj=0,col='darkred')
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.15,x=par('usr')[2]*0.01,paste('Smsy:',round(mod$Smsy),sep=' '),adj=0,col='navy')
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.2,x=par('usr')[2]*0.01,paste('Umsy:',round(mod$umsy,2),sep=' '),adj=0)
-    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.25,x=par('usr')[2]*0.01,paste('sigma:',round(mod$sigar,2),sep=' '),adj=0)
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.15,paste('log(a):',round(mod$logalpha,2),sep=' '),adj=0)
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.1,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.15,paste('Smax:',round(mod$Smax),sep=' '),adj=0,col='darkred')
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.15,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.15,paste('Smsy:',round(mod$Smsy),sep=' '),adj=0,col='navy')
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.2,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.15,paste('Umsy:',round(mod$Umsy,2),sep=' '),adj=0)
+    text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.25,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.15,paste('sigma:',round(mod$sigma,2),sep=' '),adj=0)
     if(is.na(mod$rho)==FALSE){
-      text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.05,x=par('usr')[2]*0.01,paste('rho:',round(mod$rho,2),sep=' '),adj=0)
+      text(y=par('usr')[4]-(par('usr')[4]-par('usr')[3])*0.3,x=par('usr')[2]-(par('usr')[2]-par('usr')[1])*0.15,paste('rho:',round(mod$rho,2),sep=' '),adj=0)
     }
   }
-  if(resids==TRUE){
-    plot(mod$residuals~df$by,type='n',bty='l',xlab='Brood cohort year',ylab='Productivity residual')
+  if(sr.only==FALSE){
+    plot(mod$residuals~data$by,type='n',bty='l',xlab='Brood cohort year',ylab='Productivity residual')
     abline(h=0,lty=5)
-    lines(mod$residuals~df$by,col=adjustcolor('black',alpha.f=0.2))
-    points(mod$residuals~df$by,pch=21,bg=col.p,cex=1.5)
+    lines(mod$residuals~data$by,col=adjustcolor('black',alpha.f=0.2))
+    points(mod$residuals~data$by,pch=21,bg=col.p,cex=1.5)
   }
   if(make.pdf==TRUE){
   dev.off()
@@ -55,678 +63,146 @@ static_sr_plot=function(df,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,4),plot.pa
   
 }
 
-
-
-
-sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb'),sr_only=FALSE){
-  if(type=='static'){ #static====
-    x_new=seq(0,max(df$S),length.out=200)
-
-    if(form=='stan'){
-      post=rstan::extract(mod$fit)
-      pred_df=data.frame(pred=exp(median(post$log_a)-median(post$b)*x_new)*x_new,x_new=x_new)
-      }
-    if(form=='tmb'){
-      pred_df=data.frame(pred=exp(mod$logalpha-mod$beta*x_new)*x_new,x_new=x_new)
-    }
-    pred_df=pred_df/1e3
-    
-    plot=ggplot2::ggplot(df, aes(S/1e3, R/1e3)) +
-      geom_line(data=pred_df,aes(x=x_new,y=pred),linewidth=1.3)+
-      geom_point(aes(colour = by),size=4) +
-      scale_colour_viridis_c(name='Year')+
-      ggtitle(title)+
-      xlab("Spawners (thousands)") + 
-      ylab("Recruits (thousands")+
-      xlim(0, max(df$S/1e3))+
-      ylim(0, max(df$R/1e3))+
-      theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-            strip.text = element_text(face="bold", size=12),
-            axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-  }
-  if(type=='rw'){
-    x_new=seq(0,max(df$S),length.out=200)
-    by_q=round(quantile(df$by,seq(0,1,by=0.1)))
-      if(par=='a'){ #rw alpha=====
-        if(form=='stan'){
-          post=rstan::extract(mod$fit)
-          pred_df=data.frame(x_new)
-        for(n in 1:length(by_q)){
-          pred_df[,1+n]=exp(median(post$log_a[,match(by_q[n],df$by)])-median(post$b)*x_new)*x_new
-        }
-          alpha_df=data.frame(by=seq(min(df$by),max(df$by)),med=apply(post$log_a,2,median),l90=apply(post$log_a,2,quantile,0.1),u90=apply(post$log_a,2,quantile,0.9))
-          plot2=ggplot2::ggplot(alpha_df, aes(by,med)) +
-            geom_line(aes(x=by,y=med),linewidth=1.3)+
-            geom_point(aes(colour = by),size=4) +
-            scale_colour_viridis_c(name='Year')+
-            geom_ribbon(aes(ymin =l90, ymax =u90), alpha = 0.2)+
-            ylim(min(alpha_df$l90)*0.9,max(alpha_df$u90)*1.1)+
-            xlab("Year") + 
-            ylab("log(Alpha)")+
-            theme_classic(14)+
-            theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                  strip.text = element_text(face="bold", size=12),
-                  axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-          
-        }
-        
-        if(form=='tmb'){
-          pred_df=data.frame(x_new)
-          for(n in 1:length(by_q)){
-            pred_df[,1+n]=exp(mod$logalpha[match(by_q[n],df$by)]-mod$beta*x_new)*x_new
-          }
-          alpha_df=data.frame(by=df$by,med=mod$logalpha)
-          
-          plot2=ggplot2::ggplot(alpha_df, aes(by,med)) +
-             geom_line(aes(x=by,y=med),linewidth=1.3)+
-            geom_point(aes(colour = by),size=4) +
-            ylim(min(alpha_df$med)*0.9,max(alpha_df$med)*1.1)+
-            scale_colour_viridis_c(name='Year')+
-            xlab("Year") + 
-            ylab(paste0("Productivity - log(","\u03b1",")"))+
-            theme_classic(14)+
-            theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                  strip.text = element_text(face="bold", size=12),
-                  axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-          
-          
-        }
-        pred_df=pred_df/1e3
-        
-        plot1=ggplot2::ggplot(df, aes(S/1e3, R/1e3)) +
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,2],colour = by_q[1]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,3],colour = by_q[2]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,4],colour = by_q[3]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,5],colour = by_q[4]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,6],colour = by_q[5]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,7],colour = by_q[6]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,2],colour = by_q[1]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,3],colour = by_q[2]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,4],colour = by_q[3]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,5],colour = by_q[4]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,6],colour = by_q[5]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,7],colour = by_q[6]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,8],colour = by_q[7]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,9],colour = by_q[8]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,10],colour = by_q[9]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,11],colour = by_q[10]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,12],colour = by_q[11]),linewidth=1.3)+
-          geom_point(aes(colour = by),size=4) +
-          scale_colour_viridis_c(name='Year')+
-          xlab("Spawners (thousands)") + 
-          ylab("Recruits (thousands)")+
-          xlim(0, max(df$S/1e3))+
-          ylim(0, max(df$R/1e3))+
-          theme_classic(14)+
-          theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                strip.text = element_text(face="bold", size=12),
-                axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-
-       
-        titleg <- cowplot::ggdraw() + 
-          cowplot::draw_label(
-            title,
-            fontface = 'bold',
-            x = 0.5,
-            hjust = 0.5,
-          size=18)
-        
-        legend=suppressWarnings(cowplot::get_legend(plot1))
-        
-        plot_rw_a=cowplot::plot_grid(plot1 + theme(legend.position="none"),
-                      plot2 + theme(legend.position="none"),
-                       ncol=2,nrow=1)
-        plot=cowplot::plot_grid(plot_rw_a,legend,rel_widths = c(3,.25))
-        plot=cowplot::plot_grid(titleg,plot,ncol=1,rel_heights = c(0.1,1))
-        if(sr_only==TRUE){plot=plot1}
-      }
-      if(par=='b'){ ###rw beta=====
-          if(form=='stan'){
-            post=rstan::extract(mod)
-            pred_df=data.frame(x_new)
-            
-            for(n in 1:length(by_q)){
-              pred_df[,1+n]=exp(median(post$log_a)-median(post$b[,match(by_q[n],df$by)])*x_new)*x_new
-            }
-            pred_df[,2:ncol(pred_df)]=pred_df[,2:ncol(pred_df)]/1e3
-            beta_df=data.frame(by=seq(min(df$by),max(df$by)),med=apply(post$S_max,2,median),l90=apply(post$S_max,2,quantile,0.1),u90=apply(post$S_max,2,quantile,0.9))
-            beta_df[,2]=beta_df[,2]/1e3
-            
-            plot2=ggplot2::ggplot(beta_df, aes(by,med)) +
-              geom_line(aes(x=by,y=med),linewidth=1.3)+
-              geom_point(aes(colour = by),size=4) +
-              scale_colour_viridis_c(name='Year')+
-              geom_ribbon(aes(ymin =l90, ymax =u90), alpha = 0.2)+
-              xlab("Year") + 
-              ylab("Smax (thousands")+
-              theme_classic(14)+
-              theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                    strip.text = element_text(face="bold", size=12),
-                    axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-            
-          }
-          if(form=='tmb'){
-            pred_df=data.frame(x_new)
-            for(n in 1:length(by_q)){
-              pred_df[,1+n]=exp(mod$logalpha-mod$beta[match(by_q[n],df$by)]*x_new)*x_new
-            }
-            pred_df=pred_df/1e3
-            beta_df=data.frame(by=df$by,med=mod$Smax)
-            beta_df[,2]=beta_df[,2]/1e3
-            
-            plot2=ggplot2::ggplot(beta_df, aes(by,med)) +
-             geom_line(aes(x=by,y=med),linewidth=1.3)+
-              geom_point(aes(colour = by),size=4) +
-              scale_colour_viridis_c(name='Year')+
-              ylim(min(beta_df$med)*0.9,max(beta_df$med)*1.1)+
-              xlab("Year") + 
-              ylab("Smax (thousands)")+
-              theme_classic(14)+
-              theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                    strip.text = element_text(face="bold", size=12),
-                    axis.text=element_text(face="bold",size=14),axis.title = element_text(face="bold",size=14),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-            
-            
-          }
-          
-        
-        plot1=ggplot2::ggplot(df, aes(S/1e3, R/1e3)) +
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,2],colour = by_q[1]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,3],colour = by_q[2]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,4],colour = by_q[3]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,5],colour = by_q[4]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,6],colour = by_q[5]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,7],colour = by_q[6]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,2],colour = by_q[1]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,3],colour = by_q[2]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,4],colour = by_q[3]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,5],colour = by_q[4]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,6],colour = by_q[5]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,7],colour = by_q[6]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,8],colour = by_q[7]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,9],colour = by_q[8]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,10],colour = by_q[9]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,11],colour = by_q[10]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,12],colour = by_q[11]),linewidth=1.3)+
-          geom_point(aes(colour = by),size=4) +
-          scale_colour_viridis_c(name='Year')+
-          ggtitle(title)+
-          xlab("Spawners (thousands)") + 
-          ylab("Recruits (thousands)")+
-          xlim(0, max(df$S/1e3))+
-          ylim(0, max(df$R/1e3))+
-          theme_classic(14)+
-          theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                strip.text = element_text(face="bold", size=12),
-                axis.text=element_text(face="bold",size=14),axis.title = element_text(face="bold",size=14),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-
-        
-        legend=suppressWarnings(cowplot::get_legend(plot1))
-        
-        titleg <- cowplot::ggdraw() + 
-          cowplot::draw_label(
-            title,
-            fontface = 'bold',
-            x = 0.5,
-            hjust = 0.5,
-            size=18)
-        
-        plot_rw_b=cowplot::plot_grid(plot1 + theme(legend.position="none"),
-                                     plot2 + theme(legend.position="none"),
-                                     ncol=2,nrow=1,labels=c("A","B"))
-        plot=cowplot::plot_grid(plot_rw_b,legend,rel_widths = c(3,.25))
-        plot=cowplot::plot_grid(titleg,plot,ncol=1,rel_heights = c(0.1,1))
-        if(sr_only==TRUE){plot=plot1}
-      }
-      if(par=='both'){ #rw alpha beta=====
-        if(form=='stan'){
-          post=rstan::extract(mod)
-          pred_df=data.frame(x_new)
-          for(n in 1:length(by_q)){
-            pred_df[,1+n]=exp(median(post$log_a[,match(by_q[n],df$by)])-median(post$b[,match(by_q[n],df$by)])*x_new)*x_new
-          }
-          pred_df=pred_df/1e3
-          alphabeta_df=data.frame(by=seq(min(df$by),max(df$by)),a_med=apply(post$log_a,2,median),a_l90=apply(post$log_a,2,quantile,0.15),a_u90=apply(post$log_a,2,quantile,0.85),b_med=apply(post$S_max,2,median),b_l90=apply(post$S_max,2,quantile,0.1),b_u90=apply(post$S_max,2,quantile,0.9))
-          alphabeta_df[,5:7]=alphabeta_df[,5:7]/1e3
-            
-          plot2=ggplot2::ggplot(alphabeta_df, aes(by,a_med)) +
-            geom_line(aes(x=by,y=a_med),linewidth=1.3)+
-            geom_point(aes(colour = by),size=3) +
-            scale_colour_viridis_c(name='Year')+
-            geom_ribbon(aes(ymin =a_l90, ymax =a_u90), alpha = 0.2)+
-            ylim(min(alphabeta_df$a_l90)*0.9,max(alphabeta_df$a_u90)*1.1)+
-            xlab("Year") + 
-            ylab("log(Alpha)")+
-            theme_classic(14)+
-            theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                  strip.text = element_text(face="bold", size=12),
-                  axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-          
-          plot3=ggplot2::ggplot(alphabeta_df, aes(by,b_med)) +
-            geom_line(aes(x=by,y=b_med),linewidth=1.3)+
-            geom_point(aes(colour = by),size=3) +
-            scale_colour_viridis_c(name='Year')+
-            geom_ribbon(aes(ymin =b_l90, ymax =b_u90), alpha = 0.2)+
-            ylim(min(alphabeta_df$b_l90)*0.9,max(balphabeta_df$b_u90)*1.1)+
-            xlab("Year") + 
-            ylab("Smax (thousands)")+
-            theme_classic(14)+
-            theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                  strip.text = element_text(face="bold", size=12),
-                  axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-          
-        }
-        if(form=='tmb'){
-          pred_df=data.frame(x_new)
-          for(n in 1:length(by_q)){
-            pred_df[,1+n]=exp(mod$logalpha[match(by_q[n],df$by)]-mod$beta[match(by_q[n],df$by)]*x_new)*x_new
-          }
-          pred_df[,2:ncol(pred_df)]=pred_df[,2:ncol(pred_df)]/1e3
-          alphabeta_df=data.frame(by=df$by,a_med=mod$logalpha,b_med=mod$Smax)
-          alphabeta_df[,3]=alphabeta_df[,3]/1e3
-          plot2=ggplot2::ggplot(alphabeta_df, aes(by,a_med)) +
-            geom_line(aes(x=by,y=a_med),linewidth=1.3)+
-            geom_point(aes(colour = by),size=3) +
-            scale_colour_viridis_c(name='Year')+
-            ylim(min(alphabeta_df$a_med)*0.9,max(alphabeta_df$a_med)*1.1)+
-            xlab("Year") + 
-            ylab("log(Alpha)")+
-            theme_classic(14)+
-            theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                  strip.text = element_text(face="bold", size=12),
-                  axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-          
-          plot3=ggplot2::ggplot(alphabeta_df, aes(by,b_med)) +
-            geom_line(aes(x=by,y=b_med),linewidth=1.3)+
-            geom_point(aes(colour = by),size=3) +
-            scale_colour_viridis_c(name='Year')+
-            ylim(min(alphabeta_df$b_med)*0.9,max(alphabeta_df$b_med)*1.1)+
-            xlab("Year") + 
-            ylab("Smax (thousands")+
-            theme_classic(14)+
-            theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                  strip.text = element_text(face="bold", size=12),
-                  axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-          
-          
-        }
-        
-        plot1=ggplot2::ggplot(df, aes(S/1e3, R/1e3)) +
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,2],colour = by_q[1]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,3],colour = by_q[2]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,4],colour = by_q[3]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,5],colour = by_q[4]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,6],colour = by_q[5]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,7],colour = by_q[6]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,2],colour = by_q[1]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,3],colour = by_q[2]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,4],colour = by_q[3]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,5],colour = by_q[4]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,6],colour = by_q[5]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,7],colour = by_q[6]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,8],colour = by_q[7]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,9],colour = by_q[8]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,10],colour = by_q[9]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,11],colour = by_q[10]),linewidth=1.3)+
-          geom_line(data=pred_df,aes(x=x_new,y=pred_df[,12],colour = by_q[11]),linewidth=1.3)+
-          geom_point(aes(colour = by),size=4) +
-          scale_colour_viridis_c(name='Year')+
-          xlab("Spawners (thousands)") + 
-          ylab("Recruits (thousands)")+
-          xlim(0, max(df$S/1e3))+
-          ylim(0, max(df$R/1e3))+
-          theme_classic(14)+
-          theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                strip.text = element_text(face="bold", size=12),
-                axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-        
-        
-        legend=suppressWarnings(cowplot::get_legend(plot1))
-        
-        titleg <- cowplot::ggdraw() + 
-          cowplot::draw_label(
-            title,
-            fontface = 'bold',
-            x = 0.5,
-            hjust = 0.5,
-            size=18)
-        
-        plot=cowplot::plot_grid(plot1 + theme(legend.position="none"),
-                                     plot2 + theme(legend.position="none"),
-                                     plot3 + theme(legend.position="none"),
-                                     legend,
-                                     ncol=2,nrow=2,labels=c("A","B","C"))
-        
-        plot=cowplot::plot_grid(titleg,plot,ncol=1,rel_heights = c(0.1,1))
-        
-        if(sr_only==TRUE){plot=plot1}
-        
-      }
-      
-    }
-    if(type=='hmm'){ 
-        
-        x_new=seq(min(df$S),max(df$S),length.out=200)
-        pred_df=data.frame(x_new)
-        
-        if(par=='a'){ #hmm alpha====
-          
-          if(form=='stan'){
-          post=rstan::extract(mod)
-          pred_df[,2]=exp(median(post$log_a[,1])-median(post$b)*x_new)*x_new
-          pred_df[,3]=exp(median(post$log_a[,2])-median(post$b)*x_new)*x_new
-          pred_df[,2]=pred_df[,2]/1e3
-          pred_df[,3]=pred_df[,3]/1e3
-          df$gamma=apply(post$gamma[,,2],2,median)
-          gamma_df=data.frame(by=df$by,gamma=apply(post$gamma[,,2],2,median),gamma_l90=apply(post$gamma[,,2],2,quantile,0.1),gamma_u90=apply(post$gamma[,,2],2,quantile,0.9))
-          
-          plot2=ggplot2::ggplot(gamma_df, aes(by,gamma)) +
-            ylim(0,1)+
-            geom_hline(yintercept=0.5,linetype='dashed')+
-            geom_line(aes(x=by,y=gamma),linewidth=1.3)+
-            geom_point(aes(colour = gamma),size=4) +
-            scale_colour_viridis_c(name='p')+
-            geom_ribbon(aes(ymin =gamma_l90, ymax =gamma_u90), alpha = 0.2)+
-            xlab("Year") + 
-            ylab("Prob. of high prod. regime")+
-            theme_classic(14)+
-            theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                  strip.text = element_text(face="bold", size=12),
-                  axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-          }
-          
-          if(form=='tmb'){
-            pred_df[,2]=exp(mod$logalpha[1]-mod$beta*x_new)*x_new
-            pred_df[,3]=exp(mod$logalpha[2]-mod$beta*x_new)*x_new
-            pred_df[,2]=pred_df[,2]/1e3
-            pred_df[,3]=pred_df[,3]/1e3
-            gamma_df=data.frame(by=df$by,gamma=mod$probregime[2,])
-  
-            plot2=ggplot2::ggplot(gamma_df, aes(by,gamma)) +
-              ylim(0,1)+
-              geom_hline(yintercept=0.5,linetype='dashed')+
-              geom_line(aes(x=by,y=gamma),linewidth=1.3)+
-              geom_point(aes(colour = gamma),size=4) +
-              scale_colour_viridis_c(name='P(High prod. regime)')+
-              ylim(min(gamma_df$probregime)*0.9,max(gamma_df$probregime)*1.1)+
-              xlab("Year") + 
-              ylab("Prob. of high prod. regime")+
-              theme_classic(14)+
-              theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                    strip.text = element_text(face="bold", size=12),
-                    axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-            
-          }
-          
-          plot1=ggplot2::ggplot(df, aes(S/1e3, R/1e3)) +
-            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,2],colour = min(gamma_df$gamma)),linewidth=1.3)+
-            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,3],colour = max(gamma_df$gamma)),linewidth=1.3)+
-            geom_point(aes(colour = gamma_df$gamma),size=2.5) +
-            scale_colour_viridis_c(name='p')+
-            xlab("Spawners (thousands)") + 
-            ylab("Recruits (thousands)")+
-            theme_classic(14)+
-            xlim(0, max(df$S/1e3))+
-            ylim(0, max(df$R/1e3))+
-            theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                  strip.text = element_text(face="bold", size=12),
-                  axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-          
-          
-          
-          legend=suppressWarnings(cowplot::get_legend(plot1))
-          
-          titleg <- cowplot::ggdraw() + 
-            cowplot::draw_label(
-              title,
-              fontface = 'bold',
-              x = 0.5,
-              hjust = 0.5,
-              size=18)
-          
-          plot_hmm_a=cowplot::plot_grid(plot1 + theme(legend.position="none"),
-                                       plot2 + theme(legend.position="none"),
-                                       ncol=2,nrow=1,labels=c("A","B"))
-          plot=cowplot::plot_grid(plot_hmm_a,legend,rel_widths = c(3,.3))
-          plot=cowplot::plot_grid(titleg,plot,ncol=1,rel_heights = c(0.1,1))
-          if(sr_only==TRUE){plot=plot1}
-        }
-        
-        if(par=='b'){ #hmm beta====
-          
-          if(form=='stan'){
-          post=rstan::extract(mod)
-          pred_df[,2]=exp(median(post$log_a)-median(post$b[,1])*x_new)*x_new
-          pred_df[,3]=exp(median(post$log_a)-median(post$b[,2])*x_new)*x_new
-          df$gamma=apply(post$gamma[,,2],2,median)
-          gamma_df=data.frame(by=df$by,gamma=apply(post$gamma[,,1],2,median),gamma_l90=apply(post$gamma[,,1],2,quantile,0.1),gamma_u90=apply(post$gamma[,,1],2,quantile,0.9))
-          
-          plot2=ggplot2::ggplot(gamma_df, aes(by,gamma)) +
-            ylim(0,1)+
-            geom_hline(yintercept=0.5,linetype='dashed')+
-            geom_line(aes(x=by,y=gamma),linewidth=1.3)+
-            geom_point(aes(colour = gamma),size=4) +
-            scale_colour_viridis_c(name='p')+
-            geom_ribbon(aes(ymin =gamma_l90, ymax =gamma_u90), alpha = 0.2)+
-            xlab("Year") + 
-            ylab("Prob. of high cap. regime")+
-            theme_classic(14)+
-            theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                  strip.text = element_text(face="bold", size=12),
-                  axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-          }
-          if(form=='tmb'){
-            pred_df[,2]=exp(mod$logalpha-mod$beta[1]*x_new)*x_new
-            pred_df[,3]=exp(mod$logalpha-mod$beta[2]*x_new)*x_new
-            pred_df[,2]=pred_df[,2]/1e3
-            pred_df[,3]=pred_df[,3]/1e3
-            gamma_df=data.frame(by=df$by,gamma=mod$probregime[1,])
-            
-            plot2=ggplot2::ggplot(gamma_df, aes(by,gamma)) +
-              ylim(0,1)+
-              geom_hline(yintercept=0.5,linetype='dashed')+
-              geom_line(aes(x=by,y=gamma),linewidth=1.3)+
-              geom_point(aes(colour = gamma),size=4) +
-              scale_colour_viridis_c(name='p')+
-              xlab("Year") + 
-              ylab("Prob. of high cap. regime")+
-              theme_classic(14)+
-              theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                    strip.text = element_text(face="bold", size=12),
-                    axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-            
-          }
-          
-          plot1=ggplot2::ggplot(df, aes(S, R)) +
-            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,2],colour = max(gamma_df$gamma)),linewidth=1.3)+
-            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,3],colour = min(gamma_df$gamma)),linewidth=1.3)+
-            geom_point(aes(colour = gamma_df$gamma),size=2.5) +
-            scale_colour_viridis_c(name='p')+
-            xlab("Spawners") + 
-            ylab("Recruits")+
-            xlim(0, max(df$S))+
-            ylim(0, max(df$R))+
-            theme_classic(14)+
-            theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                  strip.text = element_text(face="bold", size=12),
-                  axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-          
-         
-          
-          legend=suppressWarnings(cowplot::get_legend(plot1))
-          
-          titleg <- cowplot::ggdraw() + 
-            cowplot::draw_label(
-              title,
-              fontface = 'bold',
-              x = 0.5,
-              hjust = 0.5,
-              size=18)
-          
-          
-          plot_hmm_b=cowplot::plot_grid(plot1 + theme(legend.position="none"),
-                                        plot2 + theme(legend.position="none"),
-                                        ncol=2,nrow=1,labels=c("A","B"))
-          plot=cowplot::plot_grid(plot_hmm_b,legend,rel_widths = c(3,.3))
-          plot=cowplot::plot_grid(titleg,plot,ncol=1,rel_heights = c(0.1,1))
-          if(sr_only==TRUE){plot=plot1}
-        }
-        if(par=='both'){ #hmm alpha beta====
-          if(form=='stan'){
-          post=rstan::extract(mod)
-          pred_df[,2]=exp(median(post$log_a[,1])-median(post$b[,1])*x_new)*x_new
-          pred_df[,3]=exp(median(post$log_a[,2])-median(post$b[,2])*x_new)*x_new
-          df$gamma=apply(post$gamma[,,2],2,median)
-          gamma_df=data.frame(by=df$by,gamma=apply(post$gamma[,,2],2,median),gamma_l90=apply(post$gamma[,,2],2,quantile,0.1),gamma_u90=apply(post$gamma[,,2],2,quantile,0.9))
-          
-          plot2=ggplot2::ggplot(gamma_df, aes(by,gamma)) +
-            ylim(0,1)+
-            geom_hline(yintercept=0.5,linetype='dashed')+
-            geom_line(aes(x=by,y=gamma),linewidth=1.3)+
-            geom_point(aes(colour = gamma),size=4) +
-            scale_colour_viridis_c(name='p')+
-            geom_ribbon(aes(ymin =gamma_l90, ymax =gamma_u90), alpha = 0.2)+
-            xlab("Year") + 
-            ylab("Prob. of high prod. regime")+
-            theme_classic(14)+
-            theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                  strip.text = element_text(face="bold", size=12),
-                  axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-          }
-          if(form=='tmb'){
-            pred_df[,2]=exp(mod$logalpha[1]-mod$beta[1]*x_new)*x_new
-            pred_df[,3]=exp(mod$logalpha[2]-mod$beta[2]*x_new)*x_new
-            pred_df[,2]=pred_df[,2]/1e3
-            pred_df[,3]=pred_df[,3]/1e3
-            
-            gamma_df=data.frame(by=df$by,gamma=mod$probregime[1,])
-            
-            plot2=ggplot2::ggplot(gamma_df, aes(by,gamma)) +
-              ylim(0,1)+
-              geom_hline(yintercept=0.5,linetype='dashed')+
-              geom_line(aes(x=by,y=gamma),linewidth=1.3)+
-              geom_point(aes(colour = gamma),size=4) +
-              scale_colour_viridis_c(name='p')+
-              xlab("Year") + 
-              ylab("Prob. of high cap. regime")+
-              theme_classic(14)+
-              theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                    strip.text = element_text(face="bold", size=12),
-                    axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-          }
-          
-          plot1=ggplot2::ggplot(df, aes(S/1e3, R/1e3)) +
-            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,2],colour = min(gamma_df$gamma)),linewidth=1.3)+
-            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,3],colour = max(gamma_df$gamma)),linewidth=1.3)+
-            geom_point(aes(colour = gamma_df$gamma),size=2.5) +
-            scale_colour_viridis_c(name='p')+
-            xlab("Spawners (thousands)") + 
-            ylab("Recruits (thousands)")+
-            xlim(0, max(df$S/1e3))+
-            ylim(0, max(df$R/1e3))+
-            theme_classic(14)+
-            theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
-                  strip.text = element_text(face="bold", size=12),
-                  axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-          
-          legend=suppressWarnings(cowplot::get_legend(plot1))
-          
-          plot_hmm_ab=cowplot::plot_grid(plot1 + theme(legend.position="none"),
-                                        plot2 + theme(legend.position="none"),
-                                        ncol=2,nrow=1,labels=c("A","B"))
-          plot=cowplot::plot_grid(plot_hmm_ab,legend,rel_widths = c(3,.3))
-          if(sr_only==TRUE){plot=plot1}
-        }
-    }
-    if(make.pdf==TRUE){
-      if(type=='static'){ pdf(here(path,paste(paste(title,type,form,sep='_'),'.pdf',sep='')),width=8,height=6)}
-      if(type=='rw'&par=='both'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=10,height=10)}
-      if(type=='rw'&par!='both'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=14,height=6)}
-      if(type=='hmm'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=14,height=6)}
-      return(plot)
-      
-      dev.off()
-      dev.off()
-    }
-  if(make.pdf==FALSE){
-    return(plot)
-  }
-  
-  }
-
-#' Prior predictive check 
+#' rw_sr_plot function
 #'
-#' Any arguments to pass to [rstan::sampling].
-#'
-#' @param fit A model fit in rstan from e.g. ricker_stan, ricker_rw_stan, ricker_hmm_stan
-#'
+#' This function plots a time-varying spawner-recruit curves relative to specified spawner-recruit data based on a TMB or Stan 'random walk' model fit from samEst.
+#' @param data stock-recruitment dataset. With columns R (recruits) and S (spawners) and by (brood year)
+#' @param mod a fitted Stan or TMB static model
+#' @param title optional title for plot
+#' @param make.pdf TRUE or FALSE, indicating whether to create a pdf or not, default is FALSE
+#' @param sr.only TRUE or FALSE, indicating whether to produce just the S-R curve rather than two plots with the spawner-recruit curve and the trajectory of the time-varying parameter (log(alpha) or Smax), default is FALSE
+#' @param freq.pred frequency of the predicted S-R curve through time. Default = 3, plot a unique curve for every 3 years.
+#' @return returns the specified plot(s)
 #' @export
-prior_check<- function(data,type=c('static','rw'),AC=FALSE,par=c('a','b','both'),control = stancontrol()){
-  if(type=='static'&AC==FALSE){
-   
-    sm=sr_prior_mod(type='static')
-      
-   if(is.null(smax_priors)==T){
-      datm = list(N=nrow(data),
-                  L=max(data$by)-min(data$by)+1,
-                  ii=seq_len(nrow(data)),
-                  R_S =data$logRS,
-                  S=data$S,
-                  pSmax_mean=max(data$S)/2,
-                  pSmax_sig=max(data$S))
-      
-    }
-    if(is.null(smax_priors)==F){
-      datm = list(N=nrow(data),
-                  L=max(data$by)-min(data$by)+1,
-                  ii=seq_len(nrow(data)),
-                  R_S =data$logRS,
-                  S=data$S,
-                  pSmax_mean=smax_priors[1],
-                  pSmax_sig=smax_priors[2])
-    }
+#' @examples
+#' data(harck)
+#' fit=ricker_rw_TMB(data=harck,tv.par='a')
+#' rw_sr_plot(data=harck,mod=fit,title='Harrison Chinook')
+
+rw_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=FALSE,freq.pred=3){
+  if(is.null(title)==T){title=''}
+  if(sr.only==FALSE){par(mfrow=c(2,1))}
+  if(sr.only==TRUE){fig.pars[2]=fig.pars[2]/2}
+  if(make.pdf==TRUE){
+    pdf(paste(title,'_rw_sr.pdf',sep=''),width=fig.pars[1],height=fig.pars[2])
   }
-  if(type=='static'&AC==TRUE){
-    if(is.null(smax_priors)==T){
-      sm=sr_prior_mod(type='static',AC=TRUE)
-    }
-    if(is.null(smax_priors)==F){
-      sm=sr_prior_mod(type='static',AC=TRUE,smax_priors=smax_priors)
-    }
-  }
+  data$R=data$R/1e3
+  data$S=data$S/1e3
   
-  if(type=='rw'&par=='a'){
-    if(is.null(smax_priors)==T){
-      sm=sr_prior_mod(type='rw',par='a')
+  plot(data$R~data$S,xlim=c(0,max(data$S)),ylim=c(0,max(data$R)),type='n',bty='l',xlab='Spawners (thousands)',ylab='Recruits (thousands',main=title)
+  abline(c(0,1),lty=5)
+  col.p=viridis::viridis(length(data$by))
+  lines(data$R~data$S,col=adjustcolor('black',alpha.f=0.2),lwd=0.5)
+  points(data$R~data$S,pch=21,bg=col.p,cex=1.5)
+  text(x=data$S-max(data$S)*0.01,y=data$R+max(data$R)*0.03,data$by,cex=0.7)
+  
+  x_n=seq(0,max(data$S*1e3))
+
+  for(t in seq(1,c(max(data$by)-min(data$by)+1),by=freq.pred)){
+    if(length(mod$logalpha)>1){
+      p_n=exp(mod$logalpha[t]-mod$beta*x_n)*x_n
+    }else if(length(mod$Smax)>1){
+      p_n=exp(mod$logalpha-mod$beta[t]*x_n)*x_n
     }
-    if(is.null(smax_priors)==F){
-      sm=sr_prior_mod(type='rw',par='a',smax_priors=smax_priors)
-    }
+      lines(c(p_n/1e3)~c(x_n/1e3),lwd=2,col=adjustcolor(col.p[t],alpha.f=0.8))
   }
-  if(type=='rw'&par=='b'){
-    if(is.null(smax_priors)==T){
-      sm=sr_prior_mod(type='rw',par='b')
-    }
-    if(is.null(smax_priors)==F){
-      sm=sr_prior_mod(type='rw',par='b',smax_priors=smax_priors)
-    }
+  if(sr.only==FALSE){
+  if(length(mod$logalpha)>1){
+  plot(mod$logalpha~seq(min(data$by),max(data$by)),type='n',bty='l',xlab='Brood cohort year',ylab=expression(paste('Productivity - log(', alpha['t'],')',sep=' ')))
+  lines(mod$logalpha~data$by,col=adjustcolor('black',alpha.f=0.2))
+  points(mod$logalpha~data$by,pch=21,bg=col.p,cex=1.5)
   }
-  if(type=='rw'&par=='both'){
-    if(is.null(smax_priors)==T){
-      sm=sr_prior_mod(type='rw',par='both')
-    }
-    if(is.null(smax_priors)==F){
-      sm=sr_prior_mod(type='rw',par='both',smax_priors=smax_priors)
-    }
+  if(length(mod$Smax)>1){
+    plot(mod$Smax~seq(min(data$by),max(data$by)),type='n',bty='l',xlab='Brood cohort year',ylab='Smax')
+    lines(mod$Smax~data$by,col=adjustcolor('black',alpha.f=0.2))
+    points(mod$Smax~data$by,pch=21,bg=col.p,cex=1.5)
+  }
+  }
+  if(make.pdf==TRUE){
+    dev.off()
   }
   
-  fit<-rstan::sampling(sm, data=datm,
-                       control = control, warmup = warmup, 
-                       chains = chains, iter = iter,verbose=FALSE)
+}
+
+#' rw_sr_plot function
+#'
+#' This function plots regime shift spawner-recruit curves relative to specified spawner-recruit data based on a TMB or Stan 'hidden Markov' model fit from samEst.
+#' @param data stock-recruitment dataset. With columns R (recruits) and S (spawners) and by (brood year)
+#' @param mod a fitted Stan or TMB static model
+#' @param title optional title for plot
+#' @param make.pdf TRUE or FALSE, indicating whether to create a pdf or not, default is FALSE
+#' @param sr.only TRUE or FALSE, indicating whether to produce just the S-R curve rather than two plots with the spawner-recruit curve and the probability of each regime through time, default is FALSE
+#' @return returns the specified plot(s)
+#' @export
+#' @examples
+#' data(harck)
+#' fit=ricker_hmm_TMB(data=harck,tv.par='a')
+#' hmm_sr_plot(data=harck,mod=fit,title='Harrison Chinook')
+
+hmm_sr_plot=function(data,mod,title=NULL,make.pdf=FALSE,fig.pars=c(6,8),sr.only=FALSE){
+  if(is.null(title)==T){title=''}
+  if(sr.only==FALSE){par(mfrow=c(2,1))}
+  if(sr.only==TRUE){fig.pars[2]=fig.pars[2]/2}
+  if(make.pdf==TRUE){
+    pdf(paste(title,'_hmm_sr.pdf',sep=''),width=fig.pars[1],height=fig.pars[2])
+  }
+  x_n=seq(0,max(data$S))
+  data$R=data$R/1e3
+  data$S=data$S/1e3
   
-  yrep=rstan::extract(fit,pars='y_rep')
+  plot(data$R~data$S,xlim=c(0,max(data$S)),ylim=c(0,max(data$R)),type='n',bty='l',xlab='Spawners (thousands)',ylab='Recruits (thousands',main=title)
+  abline(c(0,1),lty=5)
+  lines(data$R~data$S,col=adjustcolor('black',alpha.f=0.2),lwd=0.5)
+  if(nrow(mod$probregime)==2){
+    col.v=viridis::viridis(100)
+    cuts=cut(mod$probregime[2,],breaks=seq(0,1,by=0.01))
+    col.p=col.v[as.numeric(cuts)]
+  }else{col.p='darkgray'}
   
-  
+  points(data$R~data$S,pch=21,bg=col.p,cex=1.5)
+  text(x=data$S-max(data$S)*0.01,y=data$R+max(data$R)*0.03,data$by,cex=0.7)
+    if(length(mod$logalpha)>1&length(mod$Smax)==1){
+      p_n=matrix(nrow=length(mod$logalpha),ncol=length(x_n))
+      col.k=viridis::viridis(length(mod$logalpha))
+      for(k in 1:length(mod$logalpha)){
+        p_n[k,]=exp(mod$logalpha[k]-mod$beta*x_n)*x_n
+       lines(c(p_n[k,]/1e3)~c(x_n/1e3),lwd=3,col=adjustcolor(col.k[k],alpha.f=0.8))
+      }
+      }
+    if(length(mod$logalpha)==1&length(mod$Smax)>1){
+      p_n=matrix(nrow=length(mod$logalpha),ncol=length(x_n))
+      col.k=viridis::viridis(length(mod$Smax))
+      for(k in 1:length(mod$Smax)){
+        p_n[k,]=exp(mod$logalpha-mod$beta[k]*x_n)*x_n
+        lines(c(p_n[k,]/1e3)~c(x_n/1e3),lwd=3,col=adjustcolor(col.k[k],alpha.f=0.8))
+      }
+    }
+  if(length(mod$logalpha)>1&length(mod$Smax)>1){
+    p_n=matrix(nrow=length(mod$logalpha),ncol=length(x_n))
+    col.k=viridis::viridis(length(mod$logalpha))
+    for(k in 1:length(mod$Smax)){
+      p_n[k,]=exp(mod$logalpha[k]-mod$beta[k]*x_n)*x_n
+      lines(c(p_n[k,]/1e3)~c(x_n/1e3),lwd=3,col=adjustcolor(col.k[k],alpha.f=0.8))
+    }
+  }
+  if(sr.only==FALSE){
+    if(nrow(mod$probregime)==2){
+    plot(mod$probregime[1,]~seq(min(data$by),max(data$by)),bty='l',xlab='Brood cohort year',ylab='Probability of higher regime',type='n',ylim=c(0,1))
+      lines(mod$probregime[2,]~seq(min(data$by),max(data$by)),col=adjustcolor(col.p,alpha.f=0.8),lwd=2)
+      points(mod$probregime[2,]~seq(min(data$by),max(data$by)),pch=21,bg=col.p,cex=1.5)
+    }
+    if(nrow(mod$probregime)>2){
+      plot(mod$probregime[1,]~seq(min(data$by),max(data$by)),bty='l',xlab='Brood cohort year',ylab='Probability of regime',type='n',ylim=c(0,1))
+      for(k in 1:nrow(mod$probregime)){
+        lines(mod$probregime[k,]~seq(min(data$by),max(data$by)),col=adjustcolor(col.k[k],alpha.f=0.8),lwd=2)
+        points(mod$probregime[k,]~seq(min(data$by),max(data$by)),pch=21,bg=col.k[k],cex=1.5)
+      }
+     
+    }
+  }
+  if(make.pdf==TRUE){
+    dev.off()
+  }
   
 }
 
@@ -737,10 +213,7 @@ prior_check<- function(data,type=c('static','rw'),AC=FALSE,par=c('a','b','both')
 #' @param data the data that were used for the model in 'fit'
 #' @export
 post_check<- function(fit,data,pdf=FALSE,path=NULL,filename=NULL){
-  if(is.null(fit$fit)==T){
-    print('Model fit must specify: full_posterior=TRUE')
-  }
-  yrep_RS=rstan::extract(fit$fit,pars='y_rep',permuted=FALSE)
+  yrep_RS=rstan::extract(fit$stanfit,pars='y_rep',permuted=FALSE)
   yrep_R=array(NA,dim=dim(yrep_RS))
   for(t in 1:6){
     yrep_R[,t,]=log10(exp(yrep_RS[,t,])*data$S)
@@ -778,29 +251,27 @@ post_check<- function(fit,data,pdf=FALSE,path=NULL,filename=NULL){
   axis(1, log10(ticksat), col="black", labels=NA,
        tcl=-0.2, lwd=0, lwd.ticks=1)
   
-  smaxs=rstan::extract(fit$fit,pars=c('prior_Smax','Smax'))
+  smaxs=rstan::extract(fit$stanfit,pars=c('prior_Smax','Smax'))
   hist(c(smaxs$prior_Smax/1e3),breaks=30,freq=T,xlim=c(0,max(c(smaxs[[1]]/1e3,smaxs[[2]]/1e3))),xlab='spawners (1000s)',col=adjustcolor('darkorange',alpha.f=0.5),border='white',main='')
   par(new=T)
   hist(c(smaxs$Smax/1e3),breaks=30,freq=T,xlim=c(0,max(c(smaxs[[1]]/1e3,smaxs[[2]]/1e3))),xlab='spawners (1000s)',col=adjustcolor('navy',alpha.f=0.5),border='white',main='',yaxt='n')
   text('Smax prior',x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*0.1),col='darkorange')
   text('Smax posterior',x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*0.2),col='navy')
   
-  plot(c(data$R/1e3)~c(data$S/1e3),xlab='spawners (1000s)',ylab='recruits (1000s)',type='n',ylim=c(0,max(data$R/1e3)),xlim=c(0,max(data$S/1e3)*1.2),bty='l')
+  plot(c(data$R/1e3)~c(data$S/1e3),xlab='spawners (1000s)',ylab='recruits (1000s)',type='n',ylim=c(0,max(data$R/1e3)),xlim=c(0,max(data$S/1e3)),bty='l')
   sn=seq(0,max(data$S))
-  muR=exp(median(fit$samples[,grepl('log_a',colnames(fit$samples))])-median(fit$samples[,grepl('b',colnames(fit$samples))])*sn)*sn
+  muR=exp(mean(fit$logalpha)-mean(fit$beta)*sn)*sn
   lines(c(muR/1e3)~c(sn/1e3),lwd=3)
-  dsmax=density(c(smaxs$Smax/1e3),bw=0.1)
+  dsmax=density(c(smaxs$Smax/1e3))
   dsy=dsmax$y/max(dsmax$y)*par('usr')[4]
   lines(dsy~dsmax$x,col='navy',lwd=3)
   text(y=c(data$R/1e3),x=c(data$S/1e3),data$by,col='darkred',cex=0.8,font=2)
-  text(x=max(data$S/1e3),y=max(data$R/1e3)*0.8,'Smax posterior',col='navy')
+  text(x=max(data$S/1e3)*0.9,y=max(data$R/1e3)*0.8,'Smax posterior',col='navy')
   if(pdf==T){
     dev.off()
     dev.off()
     }
 }
-
-#plot functions from Gottfried Pestal####
 
 #' Predicted vs observed plot
 #'

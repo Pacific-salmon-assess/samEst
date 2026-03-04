@@ -6,9 +6,10 @@
 \usage{
 ricker_rw_stan(
   data,
-  par = c("a", "b", "both"),
-  smax_priors = NULL,
-  control = stancontrol(adapt_delta = 0.99),
+  tv.par = c("a", "b", "both"),
+  Smax_mean = NULL,
+  Smax_sd = NULL,
+  control = stancontrol(adapt_delta = 0.999),
   mod = NULL,
   warmup = 300,
   chains = 6,
@@ -19,9 +20,11 @@ ricker_rw_stan(
 \arguments{
 \item{data}{A list or data frame containing complete vectors for: brood year (by), Spawners (s) and log(Recruits/Spawners) (logRS) time series. Use sr_format for the correct column names.}
 
-\item{par}{Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters (both)}
+\item{tv.par}{Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters (both)}
 
-\item{smax_priors}{User-specified smax priors, sampled from a normal distribution, should be formatted as: c(mean, sd)}
+\item{Smax_mean}{User-specified smax priors for mean, sampled from a normal distribution. Defaults to mean = half maximum observed spawners.}
+
+\item{Smax_sd}{User-specified smax priors for std. deviation, sampled from a normal distribution. defaults to sd = 2x max. observed spawners (from time series)}
 
 \item{control}{output of stancontrol}
 
@@ -49,7 +52,7 @@ a list containing the
 \item sigma_b - median estimates for the sigma_b parameter (variance attributed to random walk in Smax)
 \item residuals - median estimates for each epsilon (residual) parameter
 \item summary - summary of stan model fit
-\item full_posterior - all posterior samples of the above parameters
+\item posterior - all posterior samples of the above parameters
 \item stanfit - the stanfit model object
 }
 }

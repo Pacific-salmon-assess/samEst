@@ -15,7 +15,7 @@
 #' @param control output from [TMBcontrol()] function, to be passed to nlminb()
 #' @param tmb_map optional, mapping list indicating if parameters should be estimated of fixed.  
 #' Default is all parameters are estimated
-#' @param AC Logical. Are residuals autocorrelated? Default is FALSE
+#' @param ac Logical. Are residuals autocorrelated? Default is FALSE
 #' @param priors_flag Integer, 1 priors are included in estimation model, 0 priors are not included.
 #'  See details for priors documentation. See details for priors documentation.
 #' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
@@ -37,7 +37,7 @@
 #' * sigma_noar - if AC= TRUE, MLE estimates for the unadjusted standard deviation sigma 
 #' * rho - if AC=TRUE, MLE estimates for autocorrelation coefficient 
 #' * Smsy - Estimates of Smsy based on estimated logalpha and Smax parameters
-#' * umsy -Estimates of umsy based on estimated logalpha parameter         
+#' * Umsy -Estimates of umsy based on estimated logalpha parameter         
 #' * residuals - observed - predicted logRS estimates
 #' * AICc - AICc values, given by 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1)), excluding prior components
 #' * BIC - BIC values, excluding prior components
@@ -62,10 +62,16 @@
 #' rickerTMB(data=harck)
 #' 
 ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), 
-  tmb_map = list(), AC=FALSE, priors_flag=1, stan_flag=0,sig_p_sd=1,
-  Smax_mean=230000,Smax_sd=230000) {
-
-
+  tmb_map = list(), ac=FALSE, priors_flag=1, stan_flag=0,sig_p_sd=1,
+  Smax_mean=NULL,Smax_sd=NULL) {
+  
+  if(is.null(Smax_mean)==TRUE){
+    Smax_mean=0.5*max(data$S)
+  }
+  if(is.null(Smax_sd)==TRUE){
+    Smax_sd=2*max(data$S)
+  }
+  
   priorslogSmax<-log_prior_params(Smax_mean,Smax_sd)
   logsmax_p_mean=priorslogSmax$logsmax_pr_mean
   logsmax_p_sd=priorslogSmax$logsmax_pr_sig
@@ -95,7 +101,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
       rho=0
     )
 
-  if(!AC){   
+  if(!ac){   
     tmb_map$rho<-as.factor(NA)
   }
 
@@ -127,10 +133,10 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
     beta       = tmb_obj$report()$beta,
     Smax       = tmb_obj$report()$Smax,
     sigma      = tmb_obj$report()$sigma,
-    sigma_noar = ifelse(AC,tmb_obj$report()$sigma_noar,NA),
-    rho        = ifelse(AC,tmb_obj$report()$rhoo,NA),
+    sigma_noar = ifelse(ac,tmb_obj$report()$sigma_noar,NA),
+    rho        = ifelse(ac,tmb_obj$report()$rhoo,NA),
     Smsy       = tmb_obj$report()$Smsy,
-    umsy       = tmb_obj$report()$umsy,
+    Umsy       = tmb_obj$report()$umsy,
     residuals  = tmb_obj$report()$residuals,
     AICc       = AICc,
     BIC        = BIC,
@@ -217,10 +223,16 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' 
 ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
   control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, 
-  stan_flag=0, sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, Smax_mean=230000,Smax_sd=230000,
+  stan_flag=0, sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, Smax_mean=NULL,Smax_sd=NULL,
   AICc_type=c("conditional", "marginal")[1], deltaEDF=0.0001, newton_stp=TRUE,
   useEDF=FALSE) {
-
+ 
+    if(is.null(Smax_mean)==TRUE){
+      Smax_mean=0.5*max(data$S)
+    }
+    if(is.null(Smax_sd)==TRUE){
+      Smax_sd=2*max(data$S)
+    }
   ##Smax lognormal prior
   priorslogSmax<-log_prior_params(Smax_mean,Smax_sd)
   logsmax_p_mean=priorslogSmax$logsmax_pr_mean
@@ -381,7 +393,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     Smax     = if(tv.par=="a"){tmb_obj$report()$Smax}else{tmb_obj$report()$Smax_t},
     sigma      = tmb_obj$report()$sigobs,
     Smsy      = tmb_obj$report()$Smsy,
-    umsy      = tmb_obj$report()$umsy,
+    Umsy      = tmb_obj$report()$umsy,
     sigma_a      = ifelse(tv.par=="a"|tv.par=="both",
                        tmb_obj$report()$siga,
                        NA),
@@ -502,10 +514,16 @@ ricker_hmm_TMB <- function(data,
                            stan_flag = 0,
                            sig_p_sd=1,
                            dirichlet_prior=NULL,
-                           Smax_mean=230000,
-                           Smax_sd=230000) {
+                           Smax_mean=NULL,
+                           Smax_sd=NULL) {
 
-
+    if(is.null(Smax_mean)==TRUE){
+      Smax_mean=0.5*max(data$S)
+    }
+    if(is.null(Smax_sd)==TRUE){
+      Smax_sd=2*max(data$S)
+    }
+  
   ##Smax lognormal prior
   priorslogSmax<-log_prior_params(Smax_mean,Smax_sd)
   logsmax_p_mean=priorslogSmax$logsmax_pr_mean
@@ -620,7 +638,7 @@ ricker_hmm_TMB <- function(data,
     qij      = tmb_obj$report()$qij,
     Smsy      = tmb_obj$report()$Smsy,
     Smax      = if(tv.par == "a"){tmb_obj$report()$Smax[1]}else{tmb_obj$report()$Smax},
-    umsy      = if(tv.par == "b"){tmb_obj$report()$umsy[1]}else{tmb_obj$report()$umsy},
+    Umsy      = if(tv.par == "b"){tmb_obj$report()$umsy[1]}else{tmb_obj$report()$umsy},
     probregime =  tmb_obj$report()$r_pred,
     regime =  apply(tmb_obj$report()$r_pred, 2,which.max),
     AICc       = AICc,
@@ -724,7 +742,7 @@ ricker_kf_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_ma
     sigobs    = tmb_obj$report()$sige,
     siga      = tmb_obj$report()$sigw,
     Smsy      = tmb_obj$report()$Smsy,
-    umsy      = tmb_obj$report()$umsy,
+    Umsy      = tmb_obj$report()$umsy,
     model      = tmb_opt,
     tmb_data   = tmb_data,
     tmb_params = tmb_params,

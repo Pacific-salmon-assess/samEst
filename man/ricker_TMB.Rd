@@ -9,12 +9,12 @@ ricker_TMB(
   silent = FALSE,
   control = TMBcontrol(),
   tmb_map = list(),
-  AC = FALSE,
+  ac = FALSE,
   priors_flag = 1,
   stan_flag = 0,
   sig_p_sd = 1,
-  Smax_mean = 230000,
-  Smax_sd = 230000
+  Smax_mean = NULL,
+  Smax_sd = NULL
 )
 }
 \arguments{
@@ -27,7 +27,7 @@ ricker_TMB(
 \item{tmb_map}{optional, mapping list indicating if parameters should be estimated of fixed.
 Default is all parameters are estimated}
 
-\item{AC}{Logical. Are residuals autocorrelated? Default is FALSE}
+\item{ac}{Logical. Are residuals autocorrelated? Default is FALSE}
 
 \item{priors_flag}{Integer, 1 priors are included in estimation model, 0 priors are not included.
 See details for priors documentation. See details for priors documentation.}
@@ -50,7 +50,7 @@ a list containing several model outputs:
 \item sigma_noar - if AC= TRUE, MLE estimates for the unadjusted standard deviation sigma
 \item rho - if AC=TRUE, MLE estimates for autocorrelation coefficient
 \item Smsy - Estimates of Smsy based on estimated logalpha and Smax parameters
-\item umsy -Estimates of umsy based on estimated logalpha parameter
+\item Umsy -Estimates of umsy based on estimated logalpha parameter
 \item residuals - observed - predicted logRS estimates
 \item AICc - AICc values, given by 2\emph{nll + 2}npar +(2\emph{npar}(npar+1)/(nrow(data)-npar-1)), excluding prior components
 \item BIC - BIC values, excluding prior components

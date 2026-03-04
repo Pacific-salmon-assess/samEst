@@ -12,7 +12,7 @@
 #' @export
 #' @examples
 #' m2=sr_mod(type='static',ac = TRUE,par='n',lfo=T)
-sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both'),lfo=FALSE, modelcode=FALSE){
+sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,tv.par=c('a','b','both'),modelcode=FALSE){
   rstan::rstan_options(auto_write = TRUE)
   options(mc.cores = parallel::detectCores())
   
@@ -36,7 +36,7 @@ parameters {
 transformed parameters{
   vector[N] mu;
   vector[N] epsilon; //residuals
-  real b = 1.0/Smax;
+  real<lower=0> beta = 1.0/Smax;
     
   mu = logalpha - beta*S; //expectation through time
   epsilon = R_S - mu; //residual productivity series
@@ -55,22 +55,21 @@ model{
 generated quantities{
  real Umsy;
  real Smsy;
- real<lower=0> prior_Smax;
-
- prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
-
+ real prior_Smax;
  vector[N] y_rep;
- 
+
+prior_Smax = normal_rng(pSmax_mean,pSmax_sig);
+
 Umsy = 1-lambert_w0(exp(1-logalpha));
-Smsy = (1-lambert_w0(exp(1-logalpha)))/b;
+Smsy = (1-lambert_w0(exp(1-logalpha)))/beta;
 for(n in 1:N) y_rep[n]=normal_rng(mu[n],sigma);
 }
     "
+tv.par='n'
     }
 
-  
-  #M2: AR(1) S-R####
-  if(type=='static'&ac==T){
+#M2: AR(1) S-R####
+if(type=='static'&ac==T){
       m="data{
   int<lower=1> N;//number of annual samples
   int<lower=1> L;//number years in the data series(time-series length)
@@ -90,10 +89,10 @@ parameters{
 
 }
 transformed parameters{
-  real beta = 1.0/Smax;
+  real<lower=0> beta = 1.0/Smax;
   vector[N] mu;
   vector[N] epsilon; //residuals
-  real sigma_AR;
+  real<lower=0> sigma_AR;
   
   
   mu = logalpha-beta*S;
@@ -128,22 +127,24 @@ model{
 generated quantities{
   real Umsy;
   real Smsy;
-  real<lower=0> prior_Smax;
+  real prior_Smax;
+  vector[N] y_rep;
 
- prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
+ prior_Smax = normal_rng(pSmax_mean,pSmax_sig);
 
- vector[N] y_rep;
-  for(n in 1:N) y_rep[n]=normal_rng(mu[n],sigma_AR);
-  
  Umsy = 1-lambert_w0(exp(1-logalpha));
  Smsy = (1-lambert_w0(exp(1-logalpha)))/beta;
+ y_rep[1]=normal_rng(mu[1],sigma);
+ for(n in 2:N) y_rep[n]=normal_rng(mu[n],sigma_AR);
+  
 }
     
 "
+tv.par='n'
   }
 
 #M3: TV Prod S-R####
-if(type=='rw'&par=='a'){
+if(type=='rw'&tv.par=='a'){
     m="data{
   int<lower=1> N;//number of annual samples 
   int L; //years covered by time-series
@@ -157,7 +158,7 @@ parameters{
   real logalpha0;// initial productivity (on log scale)
   real<lower = 0> Smax; //
 
- //variance components  
+ //variance componen  ts  
   real<lower = 0> sigma_tot; //total variance - process + high freq. error
   real<lower=0,upper=1> F_rw; //fraction of variance as random walk
   
@@ -168,8 +169,10 @@ parameters{
 transformed parameters{
   real<lower = 0> sigma;
   real<lower = 0> sigma_a;
-  real beta = 1.0/Smax;
+  real<lower=0> beta = 1.0/Smax;
   vector[L] logalpha; //a in each year (on log scale)
+  vector[N] mu; //expectation
+  vector[N] epsilon; //residuals
   
   sigma=(1-F_rw)*sigma_tot;
   sigma_a=F_rw*sigma_tot;
@@ -179,6 +182,8 @@ transformed parameters{
     logalpha[t] = logalpha[t-1] + a_dev[t-1]*sigma_a; //random walk of logalpha
   }
   
+  mu = logalpha[ii] - beta*S; //expectation through time
+  epsilon = R_S - mu; //residual productivity series
 }  
 model{
   //priors
@@ -190,31 +195,28 @@ model{
   
   //variance terms
   sigma_tot ~ gamma(2,1); //half normal on variance (lower limit of zero)
-  F_rw ~ beta(2,4); //fraction attributed to random walk in productivity  
+  F_rw ~beta(2,5); //fraction attributed to random walk in productivity  
  
-  for(n in 1:N) R_S[n] ~ normal(logalpha[ii[n]] - beta*S[n], sigma); 
-  m
+  R_S ~ normal(mu, sigma); 
 }
  generated quantities{
-     vector[L] Umsy;
-     vector[L] Smsy;
-     real<lower=0> prior_Smax;
- 
- prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
- 
+    vector[L] Smsy;
+    vector[L] Umsy;
     vector[N] y_rep;
-    for(n in 1:N){    y_rep[n]=normal_rng(logalpha[ii[n]] - beta*S[n],sigma);
-}
-   
+    real prior_Smax;
+
+  prior_Smax = normal_rng(pSmax_mean,pSmax_sig);
+    
     for(l in 1:L){
-    Umsy[l] = 1-lambert_w0(exp(1-logalpha[l]));
     Smsy[l] = (1-lambert_w0(exp(1-logalpha[l])))/beta;
+    Umsy[l] = (1-lambert_w0(exp(1-logalpha[l])));
     }
+    for(n in 1:N) y_rep[n]=normal_rng(logalpha[ii[n]] - beta*S[n],sigma);
 }
 "
 }  
 #M4: TV Cap S-R####
-if(type=='rw'&par=='b'){
+if(type=='rw'&tv.par=='b'){
     m="data{
   int<lower=1> N;//number of annual samples
   int<lower=1> L;//number years in the data series(time-series length)
@@ -223,14 +225,6 @@ if(type=='rw'&par=='b'){
   vector[N] S; //spawners in time T
  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
- real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
-}
-transformed data{
-real logsmax_pr;
-real logsmax_pr_sig;
-
-logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
   real<lower=0> logalpha;// initial productivity (on log scale) - fixed in this
@@ -249,9 +243,11 @@ parameters {
 transformed parameters{
   real<lower = 0> sigma;
   real<lower = 0> sigma_b;
-  vector[L] logSmax; //b in each year
-  vector<lower=0>[L] Smax; //b in each year
-  vector<lower=0>[L] b; //b in each year
+  vector[L] logSmax; //log(smax) in each year
+  vector<lower=0>[L] Smax; //smax in each year
+  vector<lower=0>[L] beta; //beta in each year
+  vector[N] mu; //expectation
+  vector[N] epsilon; //residuals
   
   sigma=(1-F_rw)*sigma_tot;
   sigma_b=F_rw*sigma_tot;
@@ -261,9 +257,11 @@ transformed parameters{
     logSmax[t] = logSmax[t-1] + b_dev[t-1]*sigma_b;
   } 
   
- 
   Smax=exp(logSmax);
   beta=1.0./Smax;
+  
+  for(i in 1:N) mu[i] = logalpha - beta[ii[i]]*S[i]; //expectation through time
+  epsilon = R_S - mu; //residual productivity series
 }  
 
 model{
@@ -274,10 +272,10 @@ model{
 
   //variance terms
   sigma_tot ~ gamma(2,1);
-  F_rw ~ beta(2,4); //fraction attributed to random walk in productivity   
+  F_rw ~ beta(2,5); //fraction attributed to random walk in productivity   
  
   b_dev ~ std_normal();
- for(n in 1:N) R_S[n] ~ normal(logalpha-beta[ii[n]]*S[n], sigma);
+  R_S ~ normal(mu, sigma);
 }
 generated quantities{
      real Umsy;
@@ -287,7 +285,7 @@ generated quantities{
  prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
 
     vector[N] y_rep;
-    for(n in 1:N) y_rep[n]=normal_rng(logalpha - b[ii[n]]*S[n],sigma);
+    for(n in 1:N) y_rep[n]=normal_rng(logalpha - beta[ii[n]]*S[n],sigma);
      
     for(l in 1:L){Smsy[l] = (1-lambert_w0(exp(1-logalpha)))/beta[l];
     }
@@ -297,7 +295,7 @@ generated quantities{
 "
 }
 #M5: TV ProdCap S-R####
-if(type=='rw'&par=='both'){
+if(type=='rw'&tv.par=='both'){
     m="data{
   int<lower=1> N;//number of annual samples (time-series length)
   int L; //total years covered by time-series
@@ -306,7 +304,6 @@ if(type=='rw'&par=='both'){
   vector[N] S; //spawners in time T
  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
- real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 parameters{
   real logalpha0;// initial productivity (on log scale) - fixed in this
@@ -326,7 +323,9 @@ transformed parameters{
   vector<lower=0>[L] Smax; //b in each year
   vector<lower=0>[L] beta; //b in each year
    vector[L] logalpha; //a in each year (log scale)
- 
+  vector[N] mu; //expectation
+  vector[N] epsilon; //residuals
+  
  
   logalpha[1] = logalpha0;
   Smax[1] = Smax0;
@@ -335,6 +334,8 @@ transformed parameters{
     Smax[t] = Smax[t-1] + b_dev[t-1]*sigma_b;
   } 
    beta=1.0./Smax;
+  for(i in 1:N) mu[i] = logalpha[ii[i]] - beta[ii[i]]*S[i]; //expectation through time
+  epsilon = R_S - mu; //residual productivity series
 }  
 
 model{
@@ -344,36 +345,36 @@ model{
   Smax0 ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
   
   //variance terms
-  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma ~ normal(1,1); //half normal on variance (lower limit of zero)
   sigma_a ~ normal(0,1); //half normal on variance (lower limit of zero)
-  sigma_b ~ normal(0,smax_pr_sig); //half normal on variance (lower limit of zero)
+  sigma_b ~ normal(0,1); //half normal on variance (lower limit of zero)
   
   
   a_dev ~ std_normal();
   b_dev ~ std_normal();
   
-  for(n in 1:N) R_S[n] ~ normal(logalpha[ii[n]]-beta[ii[n]]*S[n], sigma);
+  R_S ~ normal(mu, sigma);
 }
  generated quantities{
-     vector[L] Umsy;
      vector[L] Smsy;
+     vector[L] Umsy;
      vector[N] y_rep;
-           real prior_Smax;
- 
- prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
+     real prior_Smax;
 
-    for(n in 1:N) y_rep[n]=normal_rng(logalpha[ii[n]] - beta[ii[n]]*S[n],sigma);
+ prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
+  
+   for(n in 1:N) y_rep[n]=normal_rng(logalpha[ii[n]] - beta[ii[n]]*S[n],sigma);
 
    for(l in 1:L){
-    Umsy[l] = 1-lambert_w0(exp(1-logalpha[l]));
     Smsy[l] = (1-lambert_w0(exp(1-logalpha[l])))/beta[l];
+    Umsy[l] = (1-lambert_w0(exp(1-logalpha[l])));
    }
 }
 
 "
 }
 #M6: Regime Prod S-R####
-if(type=='hmm'&par=='a'){
+if(type=='hmm'&tv.par=='a'){
     m="functions {
   vector normalize(vector x) {
   return x / sum(x);
@@ -516,7 +517,6 @@ prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
   }
   }
 
-real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
 
 for(n in 1:N) y_rep[n]=normal_rng(logalpha[zstar[n]] - S[n]*beta, sigma);
 
@@ -530,7 +530,7 @@ Smsy[k] = (1-lambert_w0(exp(1-logalpha[k])))/beta;
 "
 }
 #M7: Regime Cap S-R####
-if(type=='hmm'&par=='b'){
+if(type=='hmm'&tv.par=='b'){
     m="functions {
 vector normalize(vector x) {
 return x / sum(x);
@@ -650,13 +650,13 @@ array[N,K] int bpointer; // backpointer to the most likely previous state on the
 array[N,K] real delta; // max prob for the sequence up to t
 // that ends with an emission from state k
 for (j in 1:K)
-delta[1, K] = normal_lpdf(R_S[1] | logalpha - b[j]*S[1], sigma);
+delta[1, K] = normal_lpdf(R_S[1] | logalpha - beta[j]*S[1], sigma);
 for (t in 2:N) {
 for (j in 1:K) { // j = current (t)
 delta[t, j] = negative_infinity();
 for (i in 1:K) { // i = previous (t-1)
 real logp;
-logp = delta[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] | logalpha - b[j]*S[t], sigma);
+logp = delta[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] | logalpha - beta[j]*S[t], sigma);
 if (logp > delta[t, j]) {
 bpointer[t, j] = i;
 delta[t, j] = logp;
@@ -673,12 +673,12 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
 }
 
-for(n in 1:N) y_rep[n]=normal_rng(logalpha - S[n]*b[zstar[n]], sigma);
+for(n in 1:N) y_rep[n]=normal_rng(logalpha - S[n]*beta[zstar[n]], sigma);
 
-U_msy= 1-lambert_w0(exp(1-logalpha));
+Umsy= 1-lambert_w0(exp(1-logalpha));
 
 for(k in 1:K){
-Smsy[k] = (1-lambert_w0(exp(1-logalpha)))/b[k];
+Smsy[k] = (1-lambert_w0(exp(1-logalpha)))/beta[k];
 }
 
 }
@@ -687,7 +687,7 @@ Smsy[k] = (1-lambert_w0(exp(1-logalpha)))/b[k];
   }
 
 #M8: Regime ProdCap S-R####
-if(type=='hmm'&par=='both'){
+if(type=='hmm'&tv.par=='both'){
     m="functions {
       vector normalize(vector x) {
         return x / sum(x);

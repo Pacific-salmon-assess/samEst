@@ -4,7 +4,7 @@
 \alias{model_weights}
 \title{model_weights function}
 \usage{
-model_weights(x, form = c("PBMA", "AIC"), type = c("full", "d90", "d80"))
+model_weights(x, form = c("stan", "TMB"), type = c("full", "d90", "d80"))
 }
 \arguments{
 \item{x}{a dataframe of pointwise out-of-sample loglikelihoods, where each row represents model likelihood predictions - these can be estimated with the stan_lfo_cv function}
