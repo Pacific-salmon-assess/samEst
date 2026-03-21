@@ -18,7 +18,7 @@ ricker_rw_TMB(
   sigb_p_sd = 0.3,
   Smax_mean = NULL,
   Smax_sd = NULL,
-  AICc_type = c("conditional", "marginal")[1],
+  AICc_type = c("marginal", "conditional")[1],
   deltaEDF = 1e-04,
   newton_stp = TRUE,
   useEDF = FALSE
@@ -50,7 +50,7 @@ adjustment implemented. Default is 0, jacobian adjustment not included.}
 
 \item{sigb_p_sd}{sd for half normal prior on sigma for beta random walk parameter. default is 1.}
 
-\item{AICc_type}{"conditional" or "marginal"}
+\item{AICc_type}{"conditional" or "marginal" (the default)}
 
 \item{deltaEDF}{size of delta step used to calculate Thorson 2024 EDF \insertCite{thorsonMeasuringComplexityHierarchical2024}{samEst}}
 

@@ -177,7 +177,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' @param logb_p_sd sd for prior on log b, default is 3.
 #' @param logb_p_mean mean for prior on log b, default is -12.
 #' @param logb_p_sd sd for prior on log b, default is 3.
-#' @param AICc_type "conditional" or "marginal"
+#' @param AICc_type "conditional" or "marginal" (the default)
 #' @param newton_stp logical. use newton step to improve estimates and gradients
 #' @param useEDF logical use EDf algorithm describef in Thorson 2024
 #' @param deltaEDF size of delta step used to calculate Thorson 2024 EDF \insertCite{thorsonMeasuringComplexityHierarchical2024}{samEst} 
@@ -224,7 +224,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
   control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, 
   stan_flag=0, sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, Smax_mean=NULL,Smax_sd=NULL,
-  AICc_type=c("conditional", "marginal")[1], deltaEDF=0.0001, newton_stp=TRUE,
+  AICc_type=c("marginal","conditional")[1], deltaEDF=0.0001, newton_stp=TRUE,
   useEDF=FALSE) {
  
     if(is.null(Smax_mean)==TRUE){
