@@ -294,7 +294,7 @@ ricker_rw_stan <- function(data, tv.par=c('a','b','both'),Smax_mean=NULL,Smax_sd
 #' data(harck)
 #' ricker_hmm_stan(data=harck)
 #' 
-ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,Smax_mean=NULL,Smax_sd=NULL,smax_dists=c('normal','lognormal','cauchy'), dirichlet_stasis_prior=2,
+ricker_hmm_stan <- function(data, tv.par=c('a','b','both'), k_regime=2,Smax_mean=NULL,Smax_sd=NULL, dirichlet_stasis_prior=2,
   control = stancontrol(adapt_delta=0.999), warmup=300,  chains = 6, iter = 1000, mod=NULL,...) {
 
   par=match.arg(tv.par,choices=c('a','b','both'))
