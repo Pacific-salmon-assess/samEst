@@ -301,7 +301,7 @@ ricker_hmm_stan <- function(data, tv.par=c('a','b','both'), k_regime=2,Smax_mean
   dirichlet_prior<-matrix(c(dirichlet_stasis_prior,1,1,dirichlet_stasis_prior),nrow=k_regime,ncol=k_regime)
   
   if(is.null(mod)){
-    sm=samEst::sr_mod(type='hmm',par=par)
+    sm=samEst::sr_mod(type='hmm',tv.par=par)
   }else{
     sm <-mod
   }
