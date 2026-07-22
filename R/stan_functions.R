@@ -402,7 +402,7 @@ parameters {
 }
 
 transformed parameters {
-  vector[K] logtheta[N];
+  array[N] vector[K] logtheta;
   real<lower=0> beta; // rate capacity - fixed in this
   beta=1.0./Smax;
 
@@ -440,11 +440,11 @@ model{
 generated quantities {
   int<lower=1, upper=K> zstar[N];
   real logp_zstar;
-  vector[K] theta[N];
-  vector[K] logzeta[N];
-  vector[K] loggamma[N];
-  vector[K] zeta[N];
-  vector[K] gamma[N];
+  array[K] vector[N] theta;
+  array[K] vector[N] logzeta;
+  array[K] vector[N] loggamma;
+  array[K] vector[N] zeta;
+  array[K] vector[N] gamma;
   
   vector[N] y_rep;
   vector[K] Umsy;
@@ -492,7 +492,7 @@ prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
   real delta[N, K]; // max prob for the sequence up to t
   // that ends with an emission from state k
   for (j in 1:K)
-  delta[1, K] = normal_lpdf(R_S[1] | logalpha[j] - beta*S[1], sigma);
+  delta[1, j] = normal_lpdf(R_S[1] | logalpha[j] - beta*S[1], sigma);
   for (t in 2:N) {
     for (j in 1:K) { // j = current (t)
       delta[t, j] = negative_infinity();
@@ -557,7 +557,7 @@ real<lower=0> sigma; // observation standard deviations
 }
 
 transformed parameters {
-array[K] vector[N] logtheta;
+array[N] vector[K] logtheta;
 ordered[K] beta;
 
 beta=1.0/Smax;
@@ -597,11 +597,11 @@ generated quantities{
 
 array[N] int<lower=1, upper=K> zstar;
 real logp_zstar;
-array[K] vector[N] theta;
-array[K] vector[N] logzeta;
-array[K] vector[N] loggamma;
-array[K] vector[N] zeta;
-array[K] vector[N] gamma;
+array[N] vector[K] theta;
+array[N] vector[K] logzeta;
+array[N] vector[K] loggamma;
+array[N] vector[K] zeta;
+array[N] vector[K] gamma;
 vector[N] y_rep;
 real Umsy;
 vector[K] Smsy;
@@ -648,7 +648,7 @@ array[N,K] int bpointer; // backpointer to the most likely previous state on the
 array[N,K] real delta; // max prob for the sequence up to t
 // that ends with an emission from state k
 for (j in 1:K)
-delta[1, K] = normal_lpdf(R_S[1] | logalpha - beta[j]*S[1], sigma);
+delta[1, j] = normal_lpdf(R_S[1] | logalpha - beta[j]*S[1], sigma);
 for (t in 2:N) {
 for (j in 1:K) { // j = current (t)
 delta[t, j] = negative_infinity();
@@ -714,7 +714,7 @@ parameters {
     
     transformed parameters {
 
-array[K] vector[N] logtheta;
+    array[K] vector[N] logtheta;
       vector[K] beta; //
 
         beta=1.0/Smax;
@@ -805,7 +805,7 @@ array[N,K] int bpointer; // backpointer to the most likely previous state on the
 array[N,K] real delta; // max prob for the sequence up to t
 // that ends with an emission from state k
 for (j in 1:K)
-delta[1, K] = normal_lpdf(R_S[1] | logalpha[j] - beta[j]*S[1], sigma);
+delta[1, j] = normal_lpdf(R_S[1] | logalpha[j] - beta[j]*S[1], sigma);
 for (t in 2:N) {
 for (j in 1:K) { // j = current (t)
 delta[t, j] = negative_infinity();
