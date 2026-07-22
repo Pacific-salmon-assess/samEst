@@ -438,7 +438,6 @@ model{
   target += log_sum_exp(logtheta[N]);
 }
 generated quantities {
-  vector[N] log_lik;
   int<lower=1, upper=K> zstar[N];
   real logp_zstar;
   vector[K] theta[N];
@@ -580,7 +579,7 @@ logtheta[t, j] = log_sum_exp(accumulator1);
 } // Forward
 }
 model{
-pi1 ~ beta(1,1);
+pi1~ dirichlet(rep_vector(1,K));
 
 logalpha ~ normal(1.5,2.5);
 
@@ -704,7 +703,8 @@ if(type=='hmm'&tv.par=='both'){
 parameters {
       // Discrete state model
    array[K] simplex[K] A; // transition probabilities
-    
+    	 simplex[K] pi1; // initial state probabilities
+    	 
       // A[i][j] = p(z_t = j | z_{t-1} = i)
       // Continuous observation model
       ordered[K] logalpha; // regime max. productivity
@@ -713,11 +713,9 @@ parameters {
     }
     
     transformed parameters {
-	 simplex[K] pi1; // initial state probabilities
+
 array[K] vector[N] logtheta;
       vector[K] beta; //
-        
-	  pi1=rep_vector(1.0/K,K);
 
         beta=1.0/Smax;
         
@@ -738,7 +736,7 @@ array[K] vector[N] logtheta;
         } // Forward
     }
     model{
-     
+     pi1~ dirichlet(rep_vector(1,K));
       logalpha ~ normal(1.5,2.5);
      
   Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
