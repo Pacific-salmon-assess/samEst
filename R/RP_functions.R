@@ -123,9 +123,9 @@ umsyCalc <- function(loga) {
 stan_regime_rps<- function(m,par=c('a','b','both'),lambertW=FALSE){
   d=extract(m)
   if(par=='a'){
-    log_a=apply(d$log_a,2,median)
+    log_a=apply(d$logalpha,2,median)
     beta=median(d$beta)
-    S_max=median(d$S_max)
+    S_max=median(d$Smax)
     gamma=cbind(apply(d$gamma[,,1],2,median),apply(d$gamma[,,2],2,median))
     zstar=apply(d$zstar,2,median)
     
@@ -136,8 +136,8 @@ stan_regime_rps<- function(m,par=c('a','b','both'),lambertW=FALSE){
     log_a_wt=gamma%*%log_a
     
     if(lambertW){
-      U_msy=apply(d$U_msy,2,median)
-      S_msy=apply(d$S_msy,2,median)   
+      U_msy=apply(d$Umsy,2,median)
+      S_msy=apply(d$Smsy,2,median)   
       U_msy_t=U_msy[zstar]
       S_msy_t=S_msy[zstar]
       U_msy_wt = gamma%*%U_msy
@@ -148,9 +148,9 @@ stan_regime_rps<- function(m,par=c('a','b','both'),lambertW=FALSE){
     }
   }
   if(par=='b'){
-    log_a=median(d$log_a)
-    beta=apply(d$b,2,median)
-    S_max=apply(d$S_max,2,median)
+    log_a=median(d$logalpha)
+    beta=apply(d$beta,2,median)
+    Smax=apply(d$Smax,2,median)
     
     gamma=cbind(apply(d$gamma[,,1],2,median),apply(d$gamma[,,2],2,median))
     zstar=apply(d$zstar,2,median)
@@ -165,8 +165,8 @@ stan_regime_rps<- function(m,par=c('a','b','both'),lambertW=FALSE){
     
     
     if(lambertW){
-      U_msy=median(d$U_msy)
-      S_msy=apply(d$S_msy,2,median)
+      U_msy=median(d$Umsy)
+      S_msy=apply(d$Smsy,2,median)
       S_msy_t=S_msy[zstar]
       S_msy_wt = gamma%*%S_msy
       ans<-data.frame(beta_t,beta_wt,S_max_t,S_max_wt,S_msy_t,S_msy_wt)
@@ -176,9 +176,9 @@ stan_regime_rps<- function(m,par=c('a','b','both'),lambertW=FALSE){
 
   }
   if(par=='both'){
-    log_a=apply(d$log_a,2,median)
-    beta=apply(d$b,2,median)
-    S_max=apply(d$S_max,2,median)
+    log_a=apply(d$logalpha,2,median)
+    beta=apply(d$beta,2,median)
+    S_max=apply(d$Smax,2,median)
     
     gamma=cbind(apply(d$gamma[,,1],2,median),apply(d$gamma[,,2],2,median))
     zstar=apply(d$zstar,2,median)
@@ -195,8 +195,8 @@ stan_regime_rps<- function(m,par=c('a','b','both'),lambertW=FALSE){
    
 
     if(lambertW){
-      U_msy=apply(d$U_msy,2,median)
-      S_msy=apply(d$S_msy,2,median)
+      U_msy=apply(d$Umsy,2,median)
+      S_msy=apply(d$Smsy,2,median)
       U_msy_t=U_msy[zstar]
       S_msy_t=S_msy[zstar]
       U_msy_wt = gamma%*%U_msy

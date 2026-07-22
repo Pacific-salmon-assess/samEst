@@ -548,6 +548,7 @@ data {
 parameters {
 // Discrete state model
 array[K] simplex[K] A; // transition probabilities
+simplex[K] pi1; // initial state probabilities
 
 // A[i][j] = p(z_t = j | z_{t-1} = i)
 // Continuous observation model
@@ -557,12 +558,8 @@ real<lower=0> sigma; // observation standard deviations
 }
 
 transformed parameters {
-simplex[K] pi1; // initial state probabilities
-
 array[K] vector[N] logtheta;
 ordered[K] beta;
-
-pi1=rep_vector(1.0/K,K);
 
 beta=1.0/Smax;
 
@@ -583,6 +580,8 @@ logtheta[t, j] = log_sum_exp(accumulator1);
 } // Forward
 }
 model{
+pi1 ~ beta(1,1);
+
 logalpha ~ normal(1.5,2.5);
 
 Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution

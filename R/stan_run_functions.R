@@ -346,8 +346,8 @@ ricker_hmm_stan <- function(data, tv.par=c('a','b','both'), k_regime=2,Smax_mean
   parts <-stan_regime_rps(m=fit,par=par)
  
   ans<-list(
-   logalpha=ifelse(par=="a"|par=="both",list(aa$summary[grep("log_a\\[",row.names(aa$summary)),"50%"]),aa$summary["log_a","50%"])[[1]],
-   beta=ifelse(par=="b"|par=="both",list(aa$summary[grep("b\\[",row.names(aa$summary)),"50%"]),aa$summary["b","50%"])[[1]],
+   logalpha=ifelse(par=="a"|par=="both",list(aa$summary[grep("logalpha\\[",row.names(aa$summary)),"50%"]),aa$summary["logalpha","50%"])[[1]],
+   beta=ifelse(par=="b"|par=="both",list(aa$summary[grep("beta\\[",row.names(aa$summary)),"50%"]),aa$summary["beta","50%"])[[1]],
    Smax=ifelse(par=="b"|par=="both",list(aa$summary[grep("Smax\\[",row.names(aa$summary)),"50%"]),aa$summary["Smax","50%"])[[1]],
    Smsy=aa$summary[grep("Smsy\\[",row.names(aa$summary)),"50%"],
    Umsy=ifelse(par=="a"|par=="both",list(aa$summary[grep("Umsy\\[",row.names(aa$summary)),"50%"]),aa$summary["Umsy","50%"])[[1]],
