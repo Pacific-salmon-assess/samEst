@@ -440,11 +440,11 @@ model{
 generated quantities {
   int<lower=1, upper=K> zstar[N];
   real logp_zstar;
-  array[K] vector[N] theta;
-  array[K] vector[N] logzeta;
-  array[K] vector[N] loggamma;
-  array[K] vector[N] zeta;
-  array[K] vector[N] gamma;
+  array[N] vector[K] theta;
+  array[N] vector[K] logzeta;
+  array[N] vector[K] zeta;
+  array[N] vector[K] loggamma;
+  array[N] vector[K] gamma;
   
   vector[N] y_rep;
   vector[K] Umsy;
@@ -708,7 +708,7 @@ parameters {
       // A[i][j] = p(z_t = j | z_{t-1} = i)
       // Continuous observation model
       ordered[K] logalpha; // regime max. productivity
-      vector[K] Smax; // regime rate capacity 
+      vector<lower = 0>[K] Smax; // regime rate capacity 
       real<lower=0> sigma; // observation standard deviations
     }
     
@@ -754,12 +754,13 @@ vector[N] y_rep;
 //HMM estimators
 array[N] int<lower=1, upper=K> zstar;
 real logp_zstar;
-array[K] vector[N] theta; //forward state probabilities
-array[K] vector[N] logzeta;
-array[K] vector[N] loggamma;
-array[K] vector[N] zeta; //backward state probabilities
-array[K] vector[N] gamma; //forward-backward state probabilities
-
+ array[N] vector[K] logtheta;
+  array[N] vector[K] theta;
+  array[N] vector[K] logzeta;
+  array[N] vector[K] zeta;
+  array[N] vector[K] loggamma;
+  array[N] vector[K] gamma;
+  
 //reference points
 vector[K] Umsy;
 vector[K] Smsy;

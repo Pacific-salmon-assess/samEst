@@ -334,13 +334,17 @@ ricker_hmm_stan <- function(data, tv.par=c('a','b','both'), k_regime=2,Smax_mean
   #  sm <- sm_ext
   #}
  
-  fit <- rstan::sampling(sm, data = datm,
-                         control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
-  
+  fit <- rstan::sampling(sm, 
+                         data = datm,
+                         control = control, 
+                         warmup = warmup, 
+                         chains = chains, 
+                         iter = iter,
+                         verbose=FALSE)
 
   mc <- rstan::extract(fit, 
-          inc_warmup=FALSE, permuted=FALSE)
-    
+          inc_warmup=FALSE, 
+          permuted=FALSE)
 
   aa <- rstan::summary(fit)
   parts <-stan_regime_rps(m=fit,par=par)
