@@ -125,7 +125,7 @@ stan_regime_rps<- function(m,par=c('a','b','both'),lambertW=FALSE){
   if(par=='a'){
     log_a=apply(d$logalpha,2,median)
     beta=median(d$beta)
-    S_max=median(d$Smax)
+    Smax=median(d$Smax)
     gamma=cbind(apply(d$gamma[,,1],2,median),apply(d$gamma[,,2],2,median))
     zstar=apply(d$zstar,2,median)
     
@@ -136,13 +136,13 @@ stan_regime_rps<- function(m,par=c('a','b','both'),lambertW=FALSE){
     log_a_wt=gamma%*%log_a
     
     if(lambertW){
-      U_msy=apply(d$Umsy,2,median)
-      S_msy=apply(d$Smsy,2,median)   
-      U_msy_t=U_msy[zstar]
-      S_msy_t=S_msy[zstar]
-      U_msy_wt = gamma%*%U_msy
-      S_msy_wt = gamma%*%S_msy
-      ans<-data.frame(log_a_t,log_a_wt,U_msy_t,U_msy_wt,S_msy_t,S_msy_wt)
+      Umsy=apply(d$Umsy,2,median)
+      Smsy=apply(d$Smsy,2,median)   
+      Umsy_t=Umsy[zstar]
+      Smsy_t=Smsy[zstar]
+      Umsy_wt = gamma%*%Umsy
+      Smsy_wt = gamma%*%Smsy
+      ans<-data.frame(log_a_t,log_a_wt,Umsy_t,Umsy_wt,Smsy_t,Smsy_wt)
     }else{
       ans<-data.frame(log_a_t,log_a_wt)
     }
@@ -157,28 +157,28 @@ stan_regime_rps<- function(m,par=c('a','b','both'),lambertW=FALSE){
     
     #Most likely sequence of parameters:
     beta_t=beta[zstar]
-    S_max_t=S_max[zstar]
+    Smax_t=Smax[zstar]
    
     #Weighted parameters (probability of regime state X regime parameter)
     beta_wt=gamma%*%beta
-    S_max_wt = gamma%*%S_max
+    Smax_wt = gamma%*%Smax
     
     
     if(lambertW){
-      U_msy=median(d$Umsy)
-      S_msy=apply(d$Smsy,2,median)
-      S_msy_t=S_msy[zstar]
-      S_msy_wt = gamma%*%S_msy
-      ans<-data.frame(beta_t,beta_wt,S_max_t,S_max_wt,S_msy_t,S_msy_wt)
+      Umsy=median(d$Umsy)
+      Smsy=apply(d$Smsy,2,median)
+      Smsy_t=S_msy[zstar]
+      Smsy_wt = gamma%*%Smsy
+      ans<-data.frame(beta_t,beta_wt,Smax_t,Smax_wt,Smsy_t,Smsy_wt)
     }else{
-      ans<-data.frame(beta_t,beta_wt,S_max_t,S_max_wt)
+      ans<-data.frame(beta_t,beta_wt,Smax_t,Smax_wt)
     }
 
   }
   if(par=='both'){
     log_a=apply(d$logalpha,2,median)
     beta=apply(d$beta,2,median)
-    S_max=apply(d$Smax,2,median)
+    Smax=apply(d$Smax,2,median)
     
     gamma=cbind(apply(d$gamma[,,1],2,median),apply(d$gamma[,,2],2,median))
     zstar=apply(d$zstar,2,median)
@@ -186,24 +186,24 @@ stan_regime_rps<- function(m,par=c('a','b','both'),lambertW=FALSE){
     #Most likely sequence of parameters:
     log_a_t=log_a[zstar]
     beta_t=beta[zstar]
-    S_max_t=S_max[zstar]
+    Smax_t=Smax[zstar]
     
     #Weighted parameters (probability of regime state X regime parameter)
     log_a_wt=gamma%*%log_a
     beta_wt=gamma%*%beta
-    S_max_wt = gamma%*%S_max
+    Smax_wt = gamma%*%Smax
    
 
     if(lambertW){
-      U_msy=apply(d$Umsy,2,median)
-      S_msy=apply(d$Smsy,2,median)
-      U_msy_t=U_msy[zstar]
-      S_msy_t=S_msy[zstar]
-      U_msy_wt = gamma%*%U_msy
-      S_msy_wt = gamma%*%S_msy
-      ans<-data.frame(log_a_t,log_a_wt,beta_t,beta_wt,S_max_t,S_max_wt,U_msy_t,U_msy_wt,S_msy_t,S_msy_wt)
+      Umsy=apply(d$Umsy,2,median)
+      Smsy=apply(d$Smsy,2,median)
+      Umsy_t=Umsy[zstar]
+      Smsy_t=Smsy[zstar]
+      Umsy_wt = gamma%*%Umsy
+      Smsy_wt = gamma%*%Smsy
+      ans<-data.frame(log_a_t,log_a_wt,beta_t,beta_wt,Smax_t,Smax_wt,Umsy_t,Umsy_wt,Smsy_t,Smsy_wt)
     }else{
-      ans<-data.frame(log_a_t,log_a_wt,beta_t,beta_wt,S_max_t,S_max_wt)
+      ans<-data.frame(log_a_t,log_a_wt,beta_t,beta_wt,Smax_t,Smax_wt)
     }
    
   }

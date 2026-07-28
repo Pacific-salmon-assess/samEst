@@ -391,7 +391,7 @@ data {
 }
 parameters {
   // Discrete state model
-  simplex[K] A[K]; // transition probabilities
+ array[K] simplex[K] A; // transition probabilities
  simplex[K] pi1; // initial state probabilities
 
   // A[i][j] = p(z_t = j | z_{t-1} = i)
@@ -407,7 +407,7 @@ transformed parameters {
   beta=1.0./Smax;
 
 { // Forward algorithm log p(z_t = j | y_{1:t})
-  real accumulator1[K];
+  array[K] real accumulator1;
 
   for(k in 1:K) logtheta[1,k] = log(pi1[k]) + normal_lpdf(R_S[1] |logalpha[k] - beta*S[1], sigma);
 
@@ -459,7 +459,7 @@ prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
   } // Forward
   
   { // Backward algorithm log p(y_{t+1:T} | z_t = j)
-  real accumulator2[K];
+  array[K] real accumulator2;
   for (j in 1:K)
   logzeta[N, j] = 1;
   for (tforward in 0:(N-2)) {
@@ -488,8 +488,8 @@ prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
   } // Forward-backward
   
   { // Viterbi algorithm
-  int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
-  real delta[N, K]; // max prob for the sequence up to t
+  array[N,K] int bpointer; // backpointer to the most likely previous state on the most probable path
+  array[N,K] real delta; // max prob for the sequence up to t
   // that ends with an emission from state k
   for (j in 1:K)
   delta[1, j] = normal_lpdf(R_S[1] | logalpha[j] - beta*S[1], sigma);
@@ -702,7 +702,7 @@ if(type=='hmm'&tv.par=='both'){
 }
 parameters {
       // Discrete state model
-   array[K] simplex[K] A; // transition probabilities
+      array[K] simplex[K] A; // transition probabilities
     	 simplex[K] pi1; // initial state probabilities
     	 
       // A[i][j] = p(z_t = j | z_{t-1} = i)
