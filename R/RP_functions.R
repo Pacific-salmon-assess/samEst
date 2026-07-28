@@ -120,8 +120,8 @@ umsyCalc <- function(loga) {
 #' 
 #' @export
 #' 
-stan_regime_rps<- function(m,par=c('a','b','both'),lambertW=FALSE){
-  d=extract(m)
+stan_regime_rps<- function(m,par=c('a','b','both'),lambertW=TRUE){
+  d=rstan::extract(m)
   if(par=='a'){
     log_a=apply(d$logalpha,2,median)
     beta=median(d$beta)
