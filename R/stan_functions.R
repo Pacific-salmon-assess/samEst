@@ -686,147 +686,146 @@ Smsy[k] = (1-lambert_w0(exp(1-logalpha)))/beta[k];
 
 #M8: Regime ProdCap S-R####
 if(type=='hmm'&tv.par=='both'){
-    m="functions {
-      vector normalize(vector x) {
-        return x / sum(x);
-      }
-    }
-    data {
-      int<lower=1> N;//number of annual samples (time-series length)
+  m="functions {
+  vector normalize(vector x) {
+  return x / sum(x);
+}
+}
+data {
+  int<lower=1> N;//number of annual samples (time-series length)
   vector[N] R_S; //log(recruits per spawner)
   vector[N] S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
   matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
-    real pSmax_mean; //prior mean for Smax
+  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
 }
 parameters {
-      // Discrete state model
-      array[K] simplex[K] A; // transition probabilities
-    	 simplex[K] pi1; // initial state probabilities
-    	 
-      // A[i][j] = p(z_t = j | z_{t-1} = i)
-      // Continuous observation model
-      ordered[K] logalpha; // regime max. productivity
-      vector<lower = 0>[K] Smax; // regime rate capacity 
-      real<lower=0> sigma; // observation standard deviations
-    }
-    
-    transformed parameters {
+  // Discrete state model
+ array[K] simplex[K] A; // transition probabilities
+ simplex[K] pi1; // initial state probabilities
 
-    array[K] vector[N] logtheta;
-      vector[K] beta; //
+  // A[i][j] = p(z_t = j | z_{t-1} = i)
+  // Continuous observation model
+  ordered[K] logalpha; // max. productivity
+  vector<lower=0>[K] Smax; // spawners at max. recruitment
+  real<lower=0> sigma; // observation standard deviations
+}
 
-        beta=1.0/Smax;
-        
-        { // Forward algorithm log p(z_t = j | y_{1:t})
-          array[K] real accumulator1;
-          
-          logtheta[1] = log(pi1) + normal_lpdf(R_S[1]|logalpha - beta*S[1], sigma);
-          for (t in 2:N) {
-            for (j in 1:K) { // j = current (t)
-            for (i in 1:K) { // i = previous (t-1)
-            // Murphy (2012) p. 609 eq. 17.48
-            // belief state + transition prob + local evidence at t
-            accumulator1[i] = logtheta[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] |logalpha[j] - beta[j]*S[t], sigma);
-            }
-            logtheta[t, j] = log_sum_exp(accumulator1);
-            }
-          }
-        } // Forward
-    }
-    model{
-     pi1~ dirichlet(rep_vector(1,K));
-      logalpha ~ normal(1.5,2.5);
-     
+transformed parameters {
+  array[N] vector[K] logtheta;
+  vector<lower=0>[K] beta; // rate capacity - fixed in this
+  beta=1.0./Smax;
+
+{ // Forward algorithm log p(z_t = j | y_{1:t})
+  array[K] real accumulator1;
+
+  for(k in 1:K) logtheta[1,k] = log(pi1[k]) + normal_lpdf(R_S[1] |logalpha[k] - beta[k]*S[1], sigma);
+
+  for (t in 2:N) {
+  for (j in 1:K) { // j = current (t)
+	for (i in 1:K) { // i = previous (t-1)
+		// Murphy (2012) p. 609 eq. 17.48
+			// belief state + transition prob + local evidence at t
+    accumulator1[i] = logtheta[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] |logalpha[j] - beta[j]*S[t], sigma);
+  }
+  logtheta[t, j] = log_sum_exp(accumulator1);
+  }
+  }
+  } // Forward
+}
+model{
+  logalpha ~ normal(1.5,2.5);
   Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
 
-      sigma ~ gamma(2,1); //half normal on variance (lower limit of zero)
-      
-      for(k in 1:K){
-        A[k,] ~ dirichlet(alpha_dirichlet[k,]);
-      }
-      
-      target += log_sum_exp(logtheta[N]);
-    }
+  sigma ~ gamma(2,1); //half normal on variance (lower limit of zero)
+  pi1~ dirichlet(rep_vector(1,K));
+
+  for(k in 1:K){
+  A[k,] ~ dirichlet(alpha_dirichlet[k,]);
+  }
+  
+  target += log_sum_exp(logtheta[N]);
+}
 generated quantities {
-vector[N] y_rep;
-//HMM estimators
-array[N] int<lower=1, upper=K> zstar;
-real logp_zstar;
+  int<lower=1, upper=K> zstar[N];
+  real logp_zstar;
   array[N] vector[K] theta;
   array[N] vector[K] logzeta;
   array[N] vector[K] zeta;
   array[N] vector[K] loggamma;
   array[N] vector[K] gamma;
   
-//reference points
-vector[K] Umsy;
-vector[K] Smsy;
+  vector[N] y_rep;
+  vector[K] Umsy;
+  vector[K] Smsy;
+ real prior_Smax;
 
-real prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
+prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
 
-{ // Forward algortihm
-for (t in 1:N)
-theta[t] = softmax(logtheta[t]);
-} // Forward
+  { // Forward algortihm
+  for (t in 1:N)
+  theta[t] = softmax(logtheta[t]);
+  } // Forward
+  
+  { // Backward algorithm log p(y_{t+1:T} | z_t = j)
+  array[K] real accumulator2;
+  for (j in 1:K)
+  logzeta[N, j] = 1;
+  for (tforward in 0:(N-2)) {
+  int t;
+  t = N - tforward;
+  for (j in 1:K) { // j = previous (t-1)
+  for (i in 1:K) { // i = next (t)
+  // Murphy (2012) Eq. 17.58
+  // backwards t + transition prob + local evidence at t
 
-{ // Backward algorithm log p(y_{t+1:T} | z_t = j)
-array[K] real accumulator2;
-for (j in 1:K)
-logzeta[N, j] = 1;
-for (tforward in 0:(N-2)) {
-int t;
-t = N - tforward;
-for (j in 1:K) { // j = previous (t-1)
-for (i in 1:K) { // i = next (t)
-// Murphy (2012) Eq. 17.58
-// backwards t + transition prob + local evidence at t
-accumulator2[i] = logzeta[t, i] + log(A[j, i]) + normal_lpdf(R_S[t] |logalpha[i] - beta[i]*S[t], sigma);
-}
-logzeta[t-1, j] = log_sum_exp(accumulator2);
-}
-}
-for (t in 1:N)
-zeta[t] = softmax(logzeta[t]);
-} // Backward
+  accumulator2[i] = logzeta[t, i] + log(A[j, i]) + normal_lpdf(R_S[t] | logalpha[i] - beta[i]*S[t], sigma);
+  }
+  logzeta[t-1, j] = log_sum_exp(accumulator2);
+  }
+  }
+  for (t in 1:N)
+  zeta[t] = softmax(logzeta[t]);
+  } // Backward
 
+  { // Forward-backward algorithm log p(z_t = j | y_{1:N})
+  for(t in 1:N) {
+  loggamma[t] = theta[t] .* zeta[t];
+  }
+  for(t in 1:N)
+  gamma[t] = normalize(loggamma[t]);
+  } // Forward-backward
+  
+  { // Viterbi algorithm
+  array[N,K] int bpointer; // backpointer to the most likely previous state on the most probable path
+  array[N,K] real delta; // max prob for the sequence up to t
+  // that ends with an emission from state k
+  for (j in 1:K)
+  delta[1, j] = normal_lpdf(R_S[1] | logalpha[j] - beta[j]*S[1], sigma);
+  for (t in 2:N) {
+    for (j in 1:K) { // j = current (t)
+      delta[t, j] = negative_infinity();
+      for (i in 1:K) { // i = previous (t-1)
+        real logp;
+        logp = delta[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] | logalpha[j] - beta[j]*S[t], sigma);
+         
+        if (logp > delta[t, j]) {
+          bpointer[t, j] = i;
+          delta[t, j] = logp;
+        }
+      }
+    }
+  }
+  logp_zstar = max(delta[N]);
+  for (j in 1:K)
+    if (delta[N, j] == logp_zstar)
+      zstar[N] = j;
+  for (t in 1:(N - 1)) {
+    zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
+  }
+  }
 
-{ // forward-backward algorithm log p(z_t = j | y_{1:N})
-for(t in 1:N) {
-loggamma[t] = theta[t] .* zeta[t];
-}
-for(t in 1:N)
-gamma[t] = normalize(loggamma[t]);
-} // forward-backward
-
-{ // Viterbi algorithm
-array[N,K] int bpointer; // backpointer to the most likely previous state on the most probable path // backpointer to the most likely previous state on the most probable path
-array[N,K] real delta; // max prob for the sequence up to t
-// that ends with an emission from state k
-for (j in 1:K)
-delta[1, j] = normal_lpdf(R_S[1] | logalpha[j] - beta[j]*S[1], sigma);
-for (t in 2:N) {
-for (j in 1:K) { // j = current (t)
-delta[t, j] = negative_infinity();
-for (i in 1:K) { // i = previous (t-1)
-real logp;
-logp = delta[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] | logalpha[j] - beta[j]*S[t], sigma);
-if (logp > delta[t, j]) {
-bpointer[t, j] = i;
-delta[t, j] = logp;
-}
-}
-}
-}
-logp_zstar = max(delta[N]);
-for (j in 1:K)
-if (delta[N, j] == logp_zstar)
-zstar[N] = j;
-for (t in 1:(N - 1)) {
-zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
-}
-}
 
 for(n in 1:N) y_rep[n]=normal_rng(logalpha[zstar[n]] - S[n]*beta[zstar[n]], sigma);
 
