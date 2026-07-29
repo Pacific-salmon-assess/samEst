@@ -754,7 +754,6 @@ vector[N] y_rep;
 //HMM estimators
 array[N] int<lower=1, upper=K> zstar;
 real logp_zstar;
- array[N] vector[K] logtheta;
   array[N] vector[K] theta;
   array[N] vector[K] logzeta;
   array[N] vector[K] zeta;
