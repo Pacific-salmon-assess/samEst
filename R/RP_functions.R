@@ -167,7 +167,7 @@ stan_regime_rps<- function(m,par=c('a','b','both'),lambertW=TRUE){
     if(lambertW){
       Umsy=median(d$Umsy)
       Smsy=apply(d$Smsy,2,median)
-      Smsy_t=S_msy[zstar]
+      Smsy_t=Smsy[zstar]
       Smsy_wt = gamma%*%Smsy
       ans<-data.frame(beta_t,beta_wt,Smax_t,Smax_wt,Smsy_t,Smsy_wt)
     }else{
