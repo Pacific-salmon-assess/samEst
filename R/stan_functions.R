@@ -322,7 +322,7 @@ parameters{
 transformed parameters{
   vector<lower=0>[L] Smax; //b in each year
   vector<lower=0>[L] beta; //b in each year
-   vector[L] logalpha; //a in each year (log scale)
+  vector[L] logalpha; //a in each year (log scale)
   vector[N] mu; //expectation
   vector[N] epsilon; //residuals
   
@@ -708,7 +708,7 @@ parameters {
   // A[i][j] = p(z_t = j | z_{t-1} = i)
   // Continuous observation model
   ordered[K] logalpha; // max. productivity
-  vector<lower=0>[K] Smax; // spawners at max. recruitment
+  positive_ordered[K] Smax; // spawners at max. recruitment
   real<lower=0> sigma; // observation standard deviations
 }
 
