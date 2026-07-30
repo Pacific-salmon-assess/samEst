@@ -396,7 +396,7 @@ parameters {
 
   // A[i][j] = p(z_t = j | z_{t-1} = i)
   // Continuous observation model
-  ordered[K] logalpha; // max. productivity
+  positive_ordered[K] logalpha; // max. productivity
   real<lower=0> Smax; // spawners at max. recruitment
   real<lower=0> sigma; // observation standard deviations
 }
@@ -707,7 +707,7 @@ parameters {
 
   // A[i][j] = p(z_t = j | z_{t-1} = i)
   // Continuous observation model
-  ordered[K] logalpha; // max. productivity
+  positive_ordered[K] logalpha; // max. productivity
   positive_ordered[K] Smax; // spawners at max. recruitment
   real<lower=0> sigma; // observation standard deviations
 }
@@ -770,8 +770,7 @@ prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
   
   { // Backward algorithm log p(y_{t+1:T} | z_t = j)
   array[K] real accumulator2;
-  for (j in 1:K)
-  logzeta[N, j] = 1;
+  for (j in 1:K) logzeta[N, j] = 1;
   for (tforward in 0:(N-2)) {
   int t;
   t = N - tforward;
