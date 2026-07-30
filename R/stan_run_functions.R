@@ -372,10 +372,8 @@ ricker_hmm_stan <- function(data, tv.par=c('a','b','both'), k_regime=2,Smax_mean
    posterior=mc,
    stanfit=fit) 
 
-  
+  return(ans)
   if(any(aa$rhat)>=1.05){print='Warning, some R_hat values are over the threshold of 1.05 - check parameter summary'}
-
-
 }
 
 
